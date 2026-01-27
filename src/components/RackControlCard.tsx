@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shirt, ChevronUp, ChevronDown, Check } from "lucide-react";
+import { Shirt, ChevronUp, ChevronDown, Check, Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -42,58 +42,39 @@ export const RackControlCard = ({ onExtend, onRetract, position: propPosition, a
   };
 
   return (
-    <Card className="p-6 border-2">
-      <div className="flex items-center gap-2 mb-6">
-        <Shirt className="h-5 w-5 text-card-foreground" />
-        <h2 className="text-xl font-bold text-card-foreground">Rack Control</h2>
-      </div>
+    <Card className="p-6 bg-slate-800/50 backdrop-blur-sm rounded-3xl shadow-xl border border-slate-700/50">
+      <h2 className="text-2xl font-semibold text-white mb-5">Rack Control</h2>
 
-      <div className="space-y-6">
-        <div className="flex items-center justify-between p-4 bg-secondary rounded-lg">
-          <span className="font-medium text-card-foreground">Auto Mode</span>
-          <Switch checked={effectiveAutoMode} onCheckedChange={handleToggleAutoMode} />
+      <div className="space-y-4">
+        <div className="flex items-center justify-between py-2">
+          <span className="text-base font-medium text-gray-200">Auto Mode</span>
+          <Switch checked={effectiveAutoMode} onCheckedChange={handleToggleAutoMode} className="data-[state=checked]:bg-orange-500" />
         </div>
 
-        <p className="text-sm text-muted-foreground">
-          Controlled by ESP32 microcontroller via L298N motor driver and DC gear motor
-        </p>
-
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm text-muted-foreground">Current Position</span>
-            <span className="font-semibold text-card-foreground capitalize">{effectivePosition}</span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              onClick={handleExtend}
-              disabled={effectivePosition === "extended"}
-              variant={effectivePosition === "extended" ? "default" : "outline"}
-              className="w-full"
-            >
-              <ChevronUp className="h-4 w-4 mr-2" />
-              Extend
-            </Button>
-            <Button
-              onClick={handleRetract}
-              disabled={effectivePosition === "retracted"}
-              variant={effectivePosition === "retracted" ? "default" : "outline"}
-              className="w-full"
-            >
-              <ChevronDown className="h-4 w-4 mr-2" />
-              Retract
-            </Button>
-          </div>
+        <div className="space-y-3">
+          <Button
+            onClick={handleExtend}
+            disabled={effectivePosition === "extended" || effectiveAutoMode}
+            className="w-full h-14 bg-orange-500 hover:bg-orange-600 text-white font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl uppercase"
+          >
+            EXTEND
+          </Button>
+          <Button
+            onClick={handleRetract}
+            disabled={effectivePosition === "retracted" || effectiveAutoMode}
+            variant="secondary"
+            className="w-full h-14 bg-slate-600 hover:bg-slate-700 text-gray-400 font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed relative rounded-2xl uppercase border border-slate-700/50"
+          >
+            RETRACT
+            {(effectivePosition === "retracted" || effectiveAutoMode) && (
+              <Lock className="h-4 w-4 ml-2 absolute right-4" />
+            )}
+          </Button>
         </div>
 
-        {effectiveAutoMode && (
-          <div className="flex items-start gap-2 p-3 bg-success/10 border border-success/30 rounded-lg">
-            <Check className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-success">
-              Auto mode active - Rack adjusts based on weather conditions
-            </p>
-          </div>
-        )}
+        <div className="text-center text-sm text-gray-400 pt-2">
+          <span className="text-gray-500">Current Position:</span> <span className="font-bold uppercase text-gray-200">{effectivePosition}</span>
+        </div>
       </div>
     </Card>
   );

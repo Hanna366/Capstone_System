@@ -1,32 +1,39 @@
-import { AlertCircle } from "lucide-react";
+import { CheckCircle } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 interface StatusBannerProps {
   title: string;
   message: string;
   variant?: "warning" | "success" | "info";
+  isCharging?: boolean;
 }
 
-export const StatusBanner = ({ title, message, variant = "warning" }: StatusBannerProps) => {
-  const variantStyles = {
-    warning: "bg-warning/10 border-warning/30 text-warning-foreground",
-    success: "bg-success/10 border-success/30 text-success",
-    info: "bg-info/10 border-info/30 text-info",
-  };
-
+export const StatusBanner = ({ title, message, variant = "warning", isCharging = false }: StatusBannerProps) => {
   return (
-    <div className={`rounded-xl border-2 p-4 ${variantStyles[variant]}`}>
-      <div className="flex items-start gap-3">
-        <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-        <div>
-          <h3 className="font-semibold mb-1">{title}</h3>
-          <p className="text-sm opacity-90">{message}</p>
-          {variant === "success" && (
-            <p className="text-xs opacity-75 mt-1">
-              Powered by ESP32 microcontroller with Wi-Fi connectivity
-            </p>
-          )}
+    <Card className="p-6 bg-slate-800/50 backdrop-blur-sm rounded-3xl shadow-xl border border-slate-700/50">
+      <h2 className="text-2xl font-semibold text-white mb-5">System Status</h2>
+      
+      <div className="space-y-3">
+        <div className="flex items-center gap-3 p-3 bg-green-900/30 rounded-xl border border-green-800/50">
+          <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
+          <div>
+            <span className="text-sm font-medium text-gray-200">Connected to Blynk (ESP82)</span>
+          </div>
+        </div>
+        
+        <div className={`flex items-center gap-3 p-3 rounded-xl border ${
+          isCharging ? 'bg-green-900/30 border-green-800/50' : 'bg-slate-700/30 border-slate-700/50'
+        }`}>
+          <CheckCircle className={`h-5 w-5 flex-shrink-0 ${
+            isCharging ? 'text-green-400' : 'text-gray-500'
+          }`} />
+          <div>
+            <span className={`text-sm font-medium ${
+              isCharging ? 'text-gray-200' : 'text-gray-500'
+            }`}>Solar Charging</span>
+          </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };

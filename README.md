@@ -1,73 +1,102 @@
-# Welcome to your Lovable project
+# Smart Drying Rack System
 
-## Project info
+A solar-powered IoT drying solution with weather monitoring capabilities.
 
-**URL**: https://lovable.dev/projects/20357295-49d5-4d75-a1c8-bc3f8cb01187
+## Project Overview
 
-## How can I edit this code?
+This is a Smart Drying Rack system built with React and TypeScript that integrates with various hardware components including ESP32, DHT22 temperature/humidity sensors, YL-83 rain sensors, and L298N motor drivers. The system monitors environmental conditions and automatically controls the drying rack position based on weather data.
 
-There are several ways of editing your application.
+## Features
 
-**Use Lovable**
+- Real-time weather monitoring
+- Automatic rack control based on weather conditions
+- Solar power management
+- Rain detection and automatic retraction
+- Temperature and humidity monitoring
+- UV index tracking
+- Wind speed monitoring
+- Manual and automatic operation modes
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/20357295-49d5-4d75-a1c8-bc3f8cb01187) and start prompting.
+## Technologies Used
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend**: React with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **State Management**: React Hooks
+- **Routing**: React Router DOM
+- **API Integration**: RESTful services
 
-**Use your preferred IDE**
+## How to Run the Application
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Follow these steps:
+### Local Development
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. **Clone the repository**:
+   ```bash
+   git clone <your-repository-url>
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. **Navigate to the project directory**:
+   ```bash
+   cd Helioxis_Capstone_System
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+4. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
 
-**Edit a file directly in GitHub**
+5. **Open your browser**:
+   Navigate to `http://localhost:5173` (or the port shown in your terminal)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Development Workflow
 
-**Use GitHub Codespaces**
+- **IDE Development**: Use your preferred IDE for local development
+- **GitHub Integration**: Clone, make changes, and push directly to GitHub
+- **Codespaces**: Use GitHub Codespaces for cloud-based development
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Hardware Integration
 
-## What technologies are used for this project?
+The system is designed to integrate with:
 
-This project is built with:
+- **ESP32 Microcontroller**: Main control unit with Wi-Fi connectivity
+- **DHT22 Sensor**: Temperature and humidity measurements
+- **YL-83 Rain Sensor**: Precipitation detection
+- **L298N Motor Driver**: Controls DC gear motor for rack positioning
+- **Solar Power System**: 12V/10W solar panel with battery backup
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Architecture
 
-## How can I deploy this project?
+The system follows a component-based architecture with separate modules for:
 
-Simply open [Lovable](https://lovable.dev/projects/20357295-49d5-4d75-a1c8-bc3f8cb01187) and click on Share -> Publish.
+- Hardware integration
+- Weather monitoring
+- User interface
+- Data processing
+- Motor control
+- System configuration
 
-## Can I connect a custom domain to my Lovable project?
+## Deployment
 
-Yes, you can!
+This is a client-side application that can be deployed using various platforms:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- Static site hosting (Vercel, Netlify, etc.)
+- Traditional web servers
+- Container-based deployment (Docker)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Contributing
+
+For development contributions, please ensure your changes follow the project's coding standards and update the documentation accordingly.
+
+## License
+
+This project is for educational and demonstration purposes.

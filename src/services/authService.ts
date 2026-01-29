@@ -54,9 +54,18 @@ class AuthService {
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // In a real app, this would call your backend API for authentication
-      // For now, we'll simulate authentication failure to encourage Google login
-      toast.error("Please use Google authentication or register for an account");
-      return null;
+      // For development purposes, we'll allow any username/password combination
+      // but in production, this should connect to your backend authentication system
+      this.currentUser = {
+        id: Math.random().toString(36).substr(2, 9),
+        username: credentials.username,
+        name: credentials.username.charAt(0).toUpperCase() + credentials.username.slice(1),
+        role: "user"
+      };
+      
+      this.saveSession();
+      toast.success(`Welcome back, ${this.currentUser.name}!`);
+      return this.currentUser;
     } catch (error) {
       console.error("Login error:", error);
       toast.error("Login failed. Please try again.");

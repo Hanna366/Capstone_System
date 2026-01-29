@@ -21,6 +21,44 @@ const Index = () => {
   const currentUser = authService.getCurrentUser();
 
   useEffect(() => {
+    // Handle OAuth callback when Google redirects back to the root URL
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const error = params.get('error');
+    
+    if (error) {
+      console.error('Google OAuth error:', error);
+      toast.error(`Google login failed: ${error}`);
+      // Clean the URL to remove the error parameter
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+    
+    if (code) {
+      // Process the Google OAuth callback
+      const processGoogleCallback = async () => {
+        try {
+          // Clean the URL to remove the code parameter
+          window.history.replaceState({}, document.title, window.location.pathname);
+          
+          // Handle the Google callback using the auth service
+          const user = await authService.handleGoogleCallback(code);
+          
+          if (user) {
+            toast.success(`Welcome, ${user.name}! Signed in with Google.`);
+          } else {
+            toast.error('Failed to authenticate with Google');
+            navigate('/login');
+          }
+        } catch (err) {
+          console.error('Error handling Google callback:', err);
+          toast.error('An error occurred during Google authentication');
+          navigate('/login');
+        }
+      };
+      
+      processGoogleCallback();
+    }
     const initService = async () => {
       const success = await blynkService.initialize("BLYNK_API_KEY_12345");
       if (success) {

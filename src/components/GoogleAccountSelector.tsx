@@ -48,6 +48,7 @@ export const GoogleAccountSelector = ({ onSelectAccount, onCancel }: GoogleAccou
             response_type=code&
             scope=${encodeURIComponent('openid email profile')}&
             prompt=select_account&
+            access_type=offline&
             state=${encodeURIComponent('random_state_value')}`;
             
           // Redirect to Google OAuth

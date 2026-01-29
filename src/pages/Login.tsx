@@ -133,7 +133,7 @@ export const LoginPage = () => {
           
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-2 relative z-10">
                 <Label htmlFor="username" className="text-slate-300">Username</Label>
                 <Input
                   id="username"
@@ -142,13 +142,13 @@ export const LoginPage = () => {
                   placeholder="Enter your username"
                   value={credentials.username}
                   onChange={handleInputChange}
-                  className="bg-gradient-to-br from-slate-700/40 to-slate-800/40 border border-orange-500/30 text-white placeholder:text-slate-400 focus:ring-orange-500 focus:border-orange-500 rounded-xl py-3"
+                  className="bg-gradient-to-br from-slate-700/40 to-slate-800/40 border border-orange-500/30 text-white placeholder:text-slate-400 focus:ring-orange-500 focus:border-orange-500 rounded-xl py-3 pr-3"
                   required
                   autoComplete="username"
                 />
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-2 relative z-10">
                 <Label htmlFor="password" className="text-slate-300">Password</Label>
                 <div className="relative">
                   <Input

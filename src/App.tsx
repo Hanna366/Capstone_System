@@ -29,20 +29,13 @@ const router = createBrowserRouter(
     },
     {
       path: "/",
-      element: <GoogleCallbackPage />
-    },
-    {
-      path: "/",
       element: (
         <ProtectedRoute>
           <Index />
         </ProtectedRoute>
       )
     },
-    {
-      path: "/callback",
-      element: <GoogleCallbackPage />
-    },
+
     {
       path: "*",
       element: <NotFound />

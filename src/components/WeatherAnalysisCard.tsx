@@ -149,14 +149,14 @@ export const WeatherAnalysisCard = ({
 
   return (
     <Card className="p-6 bg-slate-800/50 backdrop-blur-sm rounded-3xl shadow-2xl border border-slate-700/50 hover:border-blue-500/30 transition-all duration-300 hover:shadow-blue-500/20 hover:scale-[1.02]">
-      <h2 className="text-2xl font-semibold text-white mb-6 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Weather Analysis & Recommendation</h2>
+      <h2 className="text-2xl font-semibold text-white mb-4 bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">Weather Analysis & Recommendation</h2>
 
-      <div className="space-y-5">
+      <div className="space-y-4">
         {/* Main Status Alert */}
-        <div className={`p-5 rounded-2xl ${comfort.bgColor.replace('bg-red-50', 'bg-red-900/30').replace('bg-green-50', 'bg-green-900/30').replace('bg-blue-50', 'bg-blue-900/30').replace('bg-yellow-50', 'bg-yellow-900/30')} flex items-start gap-4 border ${comfort.color.includes('red') ? 'border-red-800/50' : 'border-slate-700/50'}`}>
-          <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center">
+        <div className={`p-4 rounded-2xl ${comfort.bgColor.replace('bg-red-50', 'bg-red-900/30').replace('bg-green-50', 'bg-green-900/30').replace('bg-blue-50', 'bg-blue-900/30').replace('bg-yellow-50', 'bg-yellow-900/30')} flex items-start gap-4 border ${comfort.color.includes('red') ? 'border-red-800/50' : 'border-slate-700/50'}`}>
+          <div className="flex-shrink-0 w-14 h-14 flex items-center justify-center">
             {/* Wind Icon SVG */}
-            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M3 8h7a3 3 0 1 1 0 6M3 12h10a4 4 0 1 0 0-8M3 16h6a3 3 0 1 0 0-6" 
                 stroke={comfort.color === 'text-red-600' ? '#ef4444' : '#3b82f6'} 
                 strokeWidth="2" 
@@ -165,8 +165,8 @@ export const WeatherAnalysisCard = ({
             </svg>
           </div>
           <div className="flex-1">
-            <div className={`text-5xl font-bold ${comfort.color.replace('text-red-600', 'text-red-400').replace('text-green-600', 'text-green-400').replace('text-blue-600', 'text-blue-400')} mb-2 leading-none`}>{comfort.level}</div>
-            <div className="text-base text-gray-300">{comfort.description}</div>
+            <div className={`text-4xl font-bold ${comfort.color.replace('text-red-600', 'text-red-400').replace('text-green-600', 'text-green-400').replace('text-blue-600', 'text-blue-400')} mb-1 leading-none`}>{comfort.level}</div>
+            <div className="text-sm text-gray-300">{comfort.description}</div>
           </div>
         </div>
 
@@ -174,41 +174,41 @@ export const WeatherAnalysisCard = ({
         <div className="border-t border-slate-700/50"></div>
 
         {/* Weather Metrics Grid */}
-        <div className="grid grid-cols-2 gap-5">
-          <div className="p-5 bg-slate-700/30 rounded-2xl border border-slate-700/50">
-            <div className="flex items-center gap-3 mb-3">
-              <Thermometer className="h-7 w-7 text-orange-400" />
-              <span className="text-base font-medium text-gray-300">Temp</span>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 bg-slate-700/30 rounded-2xl border border-slate-700/50">
+            <div className="flex items-center gap-3 mb-2">
+              <Thermometer className="h-6 w-6 text-orange-400" />
+              <span className="text-sm font-medium text-gray-300">Temp</span>
             </div>
-            <div className="text-5xl font-bold text-white leading-none mb-1">{temperature}°C</div>
-            <div className="text-sm text-gray-400">(Internal)</div>
+            <div className="text-4xl font-bold text-white leading-none mb-1">{temperature}°C</div>
+            <div className="text-xs text-gray-400">(Internal)</div>
           </div>
 
-          <div className="p-5 bg-slate-700/30 rounded-2xl border border-slate-700/50">
-            <div className="flex items-center gap-3 mb-3">
+          <div className="p-4 bg-slate-700/30 rounded-2xl border border-slate-700/50">
+            <div className="flex items-center gap-3 mb-2">
               {/* Wind Turbine Icon SVG */}
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="12" cy="12" r="2" fill="#60a5fa"/>
                 <path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke="#60a5fa" strokeWidth="1.5" strokeLinecap="round"/>
                 <path d="M12 10l-4-7 1 7z" fill="#60a5fa"/>
                 <path d="M12 10l6-3-3 6z" fill="#60a5fa"/>
                 <path d="M12 10l-2 7 1-7z" fill="#60a5fa"/>
               </svg>
-              <span className="text-base font-medium text-gray-300">Wind</span>
+              <span className="text-sm font-medium text-gray-300">Wind</span>
             </div>
-            <div className="text-5xl font-bold text-white leading-none">{windSpeed} km/h</div>
+            <div className="text-4xl font-bold text-white leading-none">{windSpeed} km/h</div>
           </div>
         </div>
 
         {/* Divider */}
         <div className="border-t border-slate-700/50"></div>
 
-        <div className="p-5 bg-slate-700/30 rounded-2xl border border-slate-700/50">
-          <div className="flex items-center gap-3 mb-3">
-            <Sun className="h-7 w-7 text-yellow-400" />
-            <span className="text-base font-medium text-gray-300">UV Index</span>
+        <div className="p-4 bg-slate-700/30 rounded-2xl border border-slate-700/50">
+          <div className="flex items-center gap-3 mb-2">
+            <Sun className="h-6 w-6 text-yellow-400" />
+            <span className="text-sm font-medium text-gray-300">UV Index</span>
           </div>
-          <div className="text-5xl font-bold text-white leading-none">{uvIndex}</div>
+          <div className="text-4xl font-bold text-white leading-none">{uvIndex}</div>
         </div>
 
         {/* Divider */}
@@ -216,7 +216,7 @@ export const WeatherAnalysisCard = ({
 
         {/* Recommendation */}
         <div className="pb-0">
-          <p className="text-base text-gray-300">
+          <p className="text-sm text-gray-300">
             <span className="font-semibold text-white">Recommendation:</span> {recommendations[0]}
           </p>
         </div>

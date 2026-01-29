@@ -27,43 +27,45 @@ export const CoverStatusCard = ({ windSpeed, humidity, temperature }: CoverStatu
   }
 
   return (
-    <Card className={`p-6 bg-slate-800/50 backdrop-blur-sm rounded-3xl shadow-xl border border-slate-700/50 ${coverBgColor}`}>
+    <Card className={`p-6 bg-gradient-to-br from-slate-800/60 to-slate-900/60 backdrop-blur-sm rounded-3xl shadow-2xl border border-slate-700/50 ${coverBgColor} transition-all duration-500 hover:shadow-orange-500/30 hover:scale-[1.03]`}>
       <div className="flex items-center gap-3 mb-4">
-        {coverType === 'solid' ? (
-          <Shield className={`h-6 w-6 ${coverColor}`} />
-        ) : coverType === 'perforated' ? (
-          <Wind className={`h-6 w-6 ${coverColor}`} />
-        ) : (
-          <Sun className="h-6 w-6 text-gray-400" />
-        )}
-        <h2 className="text-2xl font-semibold text-white">Cover Status</h2>
+        <div className="p-3 bg-gradient-to-br from-slate-700/70 to-slate-800/70 rounded-xl border border-slate-600/40 shadow-inner">
+          {coverType === 'solid' ? (
+            <Shield className={`h-6 w-6 ${coverColor.replace('text-blue-400', 'text-orange-400').replace('text-orange-400', 'text-orange-500')}`} />
+          ) : coverType === 'perforated' ? (
+            <Wind className={`h-6 w-6 ${coverColor.replace('text-blue-400', 'text-orange-400').replace('text-orange-400', 'text-orange-500')}`} />
+          ) : (
+            <Sun className="h-6 w-6 text-gray-400" />
+          )}
+        </div>
+        <h2 className="text-2xl font-semibold text-white bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">Cover Status</h2>
       </div>
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl">
+        <div className="flex items-center justify-between p-4 bg-gradient-to-br from-slate-700/40 to-slate-800/40 rounded-xl border border-slate-600/40 shadow-inner">
           <span className="text-gray-300">Active Cover</span>
-          <span className={`font-bold ${coverColor} capitalize`}>
+          <span className={`font-bold ${coverColor.replace('text-blue-400', 'text-orange-400').replace('text-orange-400', 'text-orange-500')} capitalize`}>
             {coverType === 'none' ? 'Standard' : coverType}
           </span>
         </div>
 
-        <div className="p-4 bg-slate-700/30 rounded-xl">
-          <p className={`text-sm ${coverColor}`}>
+        <div className="p-4 bg-gradient-to-br from-slate-700/40 to-slate-800/40 rounded-xl border border-slate-600/40 shadow-inner">
+          <p className={`text-sm ${coverColor.replace('text-blue-400', 'text-orange-400').replace('text-orange-400', 'text-orange-500')}`}>
             {coverDescription}
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <div className="p-3 bg-slate-700/30 rounded-lg text-center">
-            <div className="text-2xl font-bold text-white">{windSpeed}</div>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="p-4 bg-gradient-to-br from-slate-700/40 to-slate-800/40 rounded-xl text-center border border-slate-600/40 shadow-inner">
+            <div className="text-3xl font-bold text-white">{windSpeed}</div>
             <div className="text-xs text-gray-400">Wind km/h</div>
           </div>
-          <div className="p-3 bg-slate-700/30 rounded-lg text-center">
-            <div className="text-2xl font-bold text-white">{humidity}%</div>
+          <div className="p-4 bg-gradient-to-br from-slate-700/40 to-slate-800/40 rounded-xl text-center border border-slate-600/40 shadow-inner">
+            <div className="text-3xl font-bold text-white">{humidity}%</div>
             <div className="text-xs text-gray-400">Humidity</div>
           </div>
-          <div className="p-3 bg-slate-700/30 rounded-lg text-center">
-            <div className="text-2xl font-bold text-white">{temperature}°C</div>
+          <div className="p-4 bg-gradient-to-br from-slate-700/40 to-slate-800/40 rounded-xl text-center border border-slate-600/40 shadow-inner">
+            <div className="text-3xl font-bold text-white">{temperature}°C</div>
             <div className="text-xs text-gray-400">Temp</div>
           </div>
         </div>

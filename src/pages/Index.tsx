@@ -83,16 +83,27 @@ const Index = () => {
 
           {/* LEFT COLUMN */}
           <div className="lg:col-span-2 -mt-2">
-            <WeatherAnalysisCard
-              temperature={deviceData?.temperature || 51}
-              humidity={deviceData?.humidity || 0}
-              uvIndex={deviceData?.uvIndex || 7}
-              windSpeed={deviceData?.windSpeed || 38}
-            />
+            <div className="h-full flex flex-col">
+              <div className="flex-grow">
+                <WeatherAnalysisCard
+                  temperature={deviceData?.temperature || 51}
+                  humidity={deviceData?.humidity || 0}
+                  uvIndex={deviceData?.uvIndex || 7}
+                  windSpeed={deviceData?.windSpeed || 38}
+                />
+              </div>
+              <div className="mt-4">
+                <CoverStatusCard
+                  windSpeed={deviceData?.windSpeed || 38}
+                  humidity={deviceData?.humidity || 0}
+                  temperature={deviceData?.temperature || 51}
+                />
+              </div>
+            </div>
           </div>
 
           {/* RIGHT COLUMN */}
-          <div className="lg:col-span-1 space-y-6 -mt-10">
+          <div className="lg:col-span-1 space-y-6 -mt-6">
             <StatusBanner
               title="System Status"
               message="Connected"
@@ -118,12 +129,6 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-6">
-            <CoverStatusCard
-              windSpeed={deviceData?.windSpeed || 38}
-              humidity={deviceData?.humidity || 0}
-              temperature={deviceData?.temperature || 51}
-            />
-            <NotificationHistory />
           </div>
         </div>
       </div>

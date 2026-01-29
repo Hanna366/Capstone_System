@@ -96,23 +96,25 @@ export const NotificationCenter = ({ compact = false }: NotificationCenterProps)
 
   return (
     <div className="relative">
-      <Button
-        variant="outline"
-        size="icon"
+      <button 
         onClick={toggleNotificationCenter}
-        className="relative"
+        className="p-3 rounded-full bg-gradient-to-r from-orange-600/40 via-amber-500/30 to-yellow-600/40 hover:from-orange-600/50 hover:via-amber-500/40 hover:to-yellow-600/50 text-white backdrop-blur-lg border-2 border-orange-400/50 shadow-2xl shadow-orange-500/20 transition-all duration-700 ease-out flex items-center justify-center w-14 h-14 group relative hover:shadow-orange-500/40 hover:border-orange-300/70 hover:scale-105"
       >
-        {unreadCount > 0 ? (
-          <>
-            <BellRing className="h-4 w-4" />
-            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs flex items-center justify-center text-white">
+        <div className="relative">
+          {unreadCount > 0 ? (
+            <BellRing className="h-6 w-6 transition-all duration-700 group-hover:scale-110 group-hover:rotate-12" />
+          ) : (
+            <Bell className="h-6 w-6 transition-all duration-700 group-hover:scale-110 group-hover:-rotate-12" />
+          )}
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-gradient-to-br from-red-500 to-red-600 text-xs flex items-center justify-center text-white animate-pulse shadow-lg shadow-red-500/50 border-2 border-white/30">
               {unreadCount}
             </span>
-          </>
-        ) : (
-          <Bell className="h-4 w-4" />
-        )}
-      </Button>
+          )}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-400/20 to-yellow-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-pulse"></div>
+        </div>
+        <span className="absolute -bottom-8 text-xs text-white whitespace-nowrap bg-gradient-to-r from-black/70 to-black/50 px-2 py-1 rounded-lg backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0 shadow-lg">Notifications</span>
+      </button>
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-96 bg-slate-800 border border-slate-700 rounded-xl shadow-lg z-50">

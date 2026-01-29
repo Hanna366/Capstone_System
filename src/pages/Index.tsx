@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { StatusBanner } from "@/components/StatusBanner";
 import { SolarPowerCard } from "@/components/SolarPowerCard";
 import { WeatherCard } from "@/components/WeatherCard";
@@ -10,10 +11,14 @@ import { NotificationHistory } from "@/components/NotificationHistory";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { CoverStatusCard } from "@/components/CoverStatusCard";
 import { blynkService, type DeviceData } from "@/services/blynkService";
+import { authService } from "@/services/authService";
 import { toast } from "sonner";
 
 const Index = () => {
   const [deviceData, setDeviceData] = useState<DeviceData | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentUser = authService.getCurrentUser();
 
   useEffect(() => {
     const initService = async () => {
@@ -55,6 +60,26 @@ const Index = () => {
             </h1>
           </div>
           <div className="flex items-center gap-3">
+            {/* User Info and Logout */}
+            <div className="hidden md:flex items-center gap-3 mr-4">
+              <div className="text-right">
+                <p className="text-white font-medium">{currentUser?.name}</p>
+                <p className="text-slate-400 text-sm capitalize">{currentUser?.role}</p>
+              </div>
+              <button 
+                onClick={() => {
+                  authService.logout();
+                  navigate('/login');
+                }}
+                className="p-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 hover:text-white transition-colors duration-200"
+                title="Logout"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </button>
+            </div>
+            
             <button className="p-3 rounded-full bg-gradient-to-r from-orange-600/30 via-orange-500/20 to-blue-600/30 hover:from-orange-600/40 hover:via-orange-500/30 hover:to-blue-600/40 text-white backdrop-blur-md border border-orange-500/30 shadow-2xl transition-all duration-500 ease-out flex items-center justify-center w-14 h-14 group">
               <div className="relative">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 transition-transform duration-500 group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">

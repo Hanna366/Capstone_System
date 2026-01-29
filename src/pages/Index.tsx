@@ -6,6 +6,8 @@ import { WeatherAnalysisCard } from "@/components/WeatherAnalysisCard";
 import { RackControlCard } from "@/components/RackControlCard";
 import { BlynkConnectionStatus } from "@/components/BlynkConnectionStatus";
 import { BlynkSettingsDialog } from "@/components/BlynkSettingsDialog";
+import { NotificationHistory } from "@/components/NotificationHistory";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import { blynkService, type DeviceData } from "@/services/blynkService";
 import { toast } from "sonner";
 
@@ -59,6 +61,9 @@ const Index = () => {
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-400/10 to-blue-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               </div>
             </button>
+            <div className="hidden md:block">
+              <NotificationCenter />
+            </div>
             <button className="p-3 rounded-full bg-gradient-to-r from-emerald-600/30 via-emerald-500/20 to-teal-600/30 hover:from-emerald-600/40 hover:via-emerald-500/30 hover:to-teal-600/40 text-white backdrop-blur-md border border-emerald-500/30 shadow-2xl transition-all duration-500 ease-out flex items-center justify-center w-14 h-14 group relative">
               <div className="relative">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 transition-transform duration-500 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -108,6 +113,10 @@ const Index = () => {
                 blynkService.toggleAutoMode(enabled)
               }
             />
+          </div>
+
+          <div className="grid grid-cols-1 gap-6">
+            <NotificationHistory />
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 // Service for connecting to Blynk IoT platform and handling real-time data
 import { toast } from "sonner";
+import { notificationService } from "./notificationService";
 
 // Define types for our IoT device data
 export interface DeviceData {
@@ -64,14 +65,14 @@ class BlynkService {
       if (isValid) {
         // Start polling for device updates
         this.startPolling();
-        toast.success("Connected to Blynk IoT Platform");
+        notificationService.notifyConnectionStatus(true, "Successfully connected to Blynk IoT Platform");
         return true;
       } else {
         throw new Error("Invalid API key");
       }
     } catch (error) {
       console.error('Failed to initialize Blynk service:', error);
-      toast.error("Failed to connect to Blynk IoT Platform");
+      notificationService.notifyConnectionStatus(false, "Failed to connect to Blynk IoT Platform");
       return false;
     }
   }
@@ -136,6 +137,51 @@ class BlynkService {
           lastUpdate: new Date(),
         };
 
+        // Check for weather-triggered rack movements
+        // If high wind or high humidity and rack is extended, auto-retract
+        if ((newData.windSpeed > 20 || newData.humidity > 75) && this.deviceData.rackPosition === 'extended') {
+          // Auto-retract due to weather conditions
+          const updatedData = {
+            ...newData,
+            rackPosition: 'retracted',
+            lastUpdate: new Date(),
+          };
+          
+          // Notify about weather-triggered movement
+          notificationService.notifyMovement('retracted', 'weather_condition');
+          
+          // Also notify as a transaction
+          notificationService.notifyTransaction(
+            'auto_retract', 
+            `Rack automatically retracted due to weather conditions (wind: ${newData.windSpeed}km/h, humidity: ${newData.humidity}%)`, 
+            'warning'
+          );
+          
+          return updatedData;
+        }
+        
+        // If low humidity and good conditions and rack is retracted, suggest extending
+        if (newData.humidity < 40 && newData.windSpeed < 15 && newData.temperature > 20 && this.deviceData.rackPosition === 'retracted' && this.deviceData.autoMode) {
+          // Auto-extend due to favorable conditions
+          const updatedData = {
+            ...newData,
+            rackPosition: 'extended',
+            lastUpdate: new Date(),
+          };
+          
+          // Notify about weather-triggered movement
+          notificationService.notifyMovement('extended', 'weather_condition');
+          
+          // Also notify as a transaction
+          notificationService.notifyTransaction(
+            'auto_extend', 
+            `Rack automatically extended due to favorable conditions (temp: ${newData.temperature}°C, humidity: ${newData.humidity}%)`, 
+            'info'
+          );
+          
+          return updatedData;
+        }
+
         resolve(newData);
       }, 200);
     });
@@ -192,14 +238,37 @@ class BlynkService {
       });
 
       if (response.success) {
-        toast.success(`Rack ${position === 'extend' ? 'extended' : 'retracted'} successfully`);
+        // Notify about the movement
+        notificationService.notifyMovement(
+          position === 'extend' ? 'extended' : 'retracted', 
+          'manual'
+        );
+        
+        // Also notify as a transaction
+        notificationService.notifyTransaction(
+          'rack_control', 
+          `Rack ${position === 'extend' ? 'extended' : 'retracted'} successfully`, 
+          'success'
+        );
+        
         return true;
       } else {
         throw new Error('Failed to control rack');
       }
     } catch (error) {
       console.error('Error controlling rack:', error);
-      toast.error(`Failed to ${position} rack`);
+      notificationService.notify(
+        'movement', 
+        `Failed to ${position} rack`, 
+        `An error occurred while attempting to ${position} the rack`, 
+        'error'
+      );
+      
+      notificationService.notifyTransaction(
+        'rack_control_failed', 
+        `Failed to ${position} rack`, 
+        'error'
+      );
       return false;
     }
   }
@@ -220,14 +289,40 @@ class BlynkService {
       });
 
       if (response.success) {
-        toast.success(`Auto mode ${enabled ? 'enabled' : 'disabled'}`);
+        // Notify about the auto mode change
+        notificationService.notify(
+          'system_status', 
+          `Auto mode ${enabled ? 'enabled' : 'disabled'}`, 
+          `Automatic rack control has been ${enabled ? 'enabled' : 'disabled'}`, 
+          enabled ? 'info' : 'warning'
+        );
+        
+        // Also notify as a transaction
+        notificationService.notifyTransaction(
+          'auto_mode_toggle', 
+          `Auto mode ${enabled ? 'enabled' : 'disabled'}`, 
+          enabled ? 'info' : 'warning'
+        );
+        
         return true;
       } else {
         throw new Error('Failed to toggle auto mode');
       }
     } catch (error) {
       console.error('Error toggling auto mode:', error);
-      toast.error(`Failed to ${enabled ? 'enable' : 'disable'} auto mode`);
+      notificationService.notify(
+        'system_status', 
+        `Failed to ${enabled ? 'enable' : 'disable'} auto mode`, 
+        `An error occurred while changing auto mode status`, 
+        'error'
+      );
+      
+      notificationService.notifyTransaction(
+        'auto_mode_toggle_failed', 
+        `Failed to ${enabled ? 'enable' : 'disable'} auto mode`, 
+        'error'
+      );
+      
       return false;
     }
   }
@@ -239,7 +334,7 @@ class BlynkService {
       ...this.deviceData,
       connected: false,
     };
-    toast.info("Disconnected from Blynk IoT Platform");
+    notificationService.notifyConnectionStatus(false, "Disconnected from Blynk IoT Platform");
   }
 }
 

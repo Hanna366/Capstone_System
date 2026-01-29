@@ -3,6 +3,7 @@ import { Shirt, ChevronUp, ChevronDown, Check, Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { notificationService } from "@/services/notificationService";
 
 interface RackControlCardProps {
   onExtend: () => void;
@@ -25,6 +26,9 @@ export const RackControlCard = ({ onExtend, onRetract, position: propPosition, a
       await onExtend();
     }
     setLocalPosition("extended");
+    
+    // Notify about the movement
+    notificationService.notifyMovement('extended', 'manual');
   };
 
   const handleRetract = async () => {
@@ -32,6 +36,9 @@ export const RackControlCard = ({ onExtend, onRetract, position: propPosition, a
       await onRetract();
     }
     setLocalPosition("retracted");
+    
+    // Notify about the movement
+    notificationService.notifyMovement('retracted', 'manual');
   };
 
   const handleToggleAutoMode = (enabled: boolean) => {

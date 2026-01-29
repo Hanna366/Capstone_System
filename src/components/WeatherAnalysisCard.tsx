@@ -1,5 +1,7 @@
 import { Sun, Thermometer } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useEffect } from "react";
+import { notificationService } from "@/services/notificationService";
 
 interface WeatherAnalysisCardProps {
   temperature: number;
@@ -15,6 +17,39 @@ export const WeatherAnalysisCard = ({
   windSpeed 
 }: WeatherAnalysisCardProps) => {
   // Calculate comfort level based on various factors
+  
+  // Send weather alerts when conditions change
+  useEffect(() => {
+    if (humidity > 70) {
+      notificationService.notifyWeatherAlert(
+        "High Humidity", 
+        "Humidity levels are above 70%. Consider retracting the rack to prevent moisture absorption."
+      );
+    }
+    
+    if (uvIndex > 8) {
+      notificationService.notifyWeatherAlert(
+        "High UV Levels", 
+        "UV index is above 8. Clothes will dry faster but colors may fade."
+      );
+    }
+    
+    if (windSpeed > 20) {
+      notificationService.notifyWeatherAlert(
+        "High Wind Speed", 
+        "Wind speeds are above 20 km/h. Rack may have been retracted automatically for safety."
+      );
+    }
+    
+    if (temperature < 15) {
+      notificationService.notifyWeatherAlert(
+        "Low Temperature", 
+        "Temperatures are below 15°C. Drying will be slower than usual."
+      );
+    }
+  }, [humidity, uvIndex, windSpeed, temperature]);
+  
+  
   const calculateComfortLevel = (): { level: string; description: string; color: string; bgColor: string } => {
     // Temperature comfort calculation
     const tempComfort = Math.abs(temperature - 22); // 22°C is ideal
@@ -66,7 +101,7 @@ export const WeatherAnalysisCard = ({
     }
     
     if (windSpeed > 20) {
-      recs.push("Rack Retracted automatically.");
+      recs.push("High winds detected - rack may retract automatically.");
     }
     
     if (temperature < 15) {

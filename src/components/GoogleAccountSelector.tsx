@@ -36,20 +36,29 @@ export const GoogleAccountSelector = ({ onSelectAccount, onCancel }: GoogleAccou
         setTimeout(() => {
           // Use your actual Google OAuth credentials
           // Make sure this redirect URI matches what you configured in Google Cloud Console
-          const clientId = '511789621559-tl7q4kuf9atekpl9ilhi6rcnoqbrq7qv.apps.googleusercontent.com';
+          const clientId = '511789621559-p9gl974uls3j9tv9oclt5qnoishlkg7h.apps.googleusercontent.com';
           
           // IMPORTANT: Make sure this redirect URI matches exactly what you registered in Google Cloud Console
-          // For Google OAuth, we use just the origin as redirect URI
+          // For Google OAuth, we use the root URL since that's where the Smart Drying Rack interface is hosted
           const redirectUri = window.location.origin;
           
-          const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?
-            client_id=${encodeURIComponent(clientId)}&
-            redirect_uri=${encodeURIComponent(redirectUri)}&
-            response_type=code&
-            scope=${encodeURIComponent('openid email profile')}&
-            prompt=select_account&
-            access_type=offline&
-            state=${encodeURIComponent('random_state_value')}`;
+          // Log the redirect URI for debugging
+          console.log('Redirect URI being sent to Google:', redirectUri);
+          
+          const params = new URLSearchParams({
+            client_id: clientId,
+            redirect_uri: redirectUri,
+            response_type: 'code',
+            scope: 'openid email profile',
+            prompt: 'select_account',
+            access_type: 'offline',
+            state: 'random_state_value'
+          });
+          
+          const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+          
+          // Log the full URL for debugging
+          console.log('Full Google Auth URL:', googleAuthUrl);
             
           // Redirect to Google OAuth
           window.location.href = googleAuthUrl.replace(/\s+/g, '');

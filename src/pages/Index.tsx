@@ -18,6 +18,12 @@ const Index = () => {
   const [deviceData, setDeviceData] = useState<DeviceData | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Ensure auth state is loaded from localStorage
+  useEffect(() => {
+    authService.refreshAuthState();
+  }, []);
+  
   const currentUser = authService.getCurrentUser();
 
   useEffect(() => {
@@ -31,6 +37,8 @@ const Index = () => {
       toast.error(`Google login failed: ${error}`);
       // Clean the URL to remove the error parameter
       window.history.replaceState({}, document.title, window.location.pathname);
+      // Still navigate to login on error
+      navigate('/login');
       return;
     }
     
@@ -46,6 +54,8 @@ const Index = () => {
           
           if (user) {
             toast.success(`Welcome, ${user.name}! Signed in with Google.`);
+            // Immediately navigate to ensure authentication state is set
+            navigate('/', { replace: true });
           } else {
             toast.error('Failed to authenticate with Google');
             navigate('/login');
@@ -59,6 +69,7 @@ const Index = () => {
       
       processGoogleCallback();
     }
+    
     const initService = async () => {
       const success = await blynkService.initialize("BLYNK_API_KEY_12345");
       if (success) {

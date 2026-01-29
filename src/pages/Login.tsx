@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,13 @@ export const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showGoogleSelector, setShowGoogleSelector] = useState(false);
   const navigate = useNavigate();
+  
+  // Check if user is already authenticated and redirect
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -40,7 +47,9 @@ export const LoginPage = () => {
       const user = await authService.login(credentials);
       if (user) {
         // Navigate to dashboard after successful login
-        navigate("/");
+        setTimeout(() => {
+          navigate("/");
+        }, 300);
       }
     } finally {
       setIsLoading(false);
@@ -228,7 +237,7 @@ export const LoginPage = () => {
 
               
               <div className="text-center text-sm text-slate-400 pt-2">
-                <p>Don't have an account? <a href="/register" className="text-orange-400 hover:text-orange-300 transition-colors">Sign up</a></p>
+                <p>Don't have an account? <button type="button" onClick={() => navigate('/register')} className="text-orange-400 hover:text-orange-300 transition-colors underline z-50 relative">Sign up</button></p>
               </div>
             </CardFooter>
           </form>

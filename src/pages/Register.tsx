@@ -66,23 +66,37 @@ export const RegisterPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Form submit triggered"); // Debug log
     
     if (!validateForm()) {
+      console.log("Form validation failed"); // Debug log
       return;
     }
 
+    console.log("Form validation passed, proceeding with registration"); // Debug log
     setIsLoading(true);
     try {
       // In a real app, this would call your backend API to register the user
-      // For now, we'll simulate registration and auto-login
-        toast.success("Account created successfully! You can now log in.");
-      setTimeout(() => {
-        navigate("/login");
-      }, 1500);
+      // For now, we'll create a user account and auto-login
+      const newUser: User = {
+        id: Math.random().toString(36).substr(2, 9),
+        username: credentials.username,
+        name: credentials.name,
+        role: "user"
+      };
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Set the current user (simulate login after registration)
+      authService.setCurrentUser(newUser);
+      
+      toast.success(`Welcome, ${credentials.name}! Account created successfully.`);
+      // Direct navigation instead of setTimeout
+      navigate("/");
     } catch (error) {
       console.error("Registration error:", error);
       toast.error("Registration failed. Please try again.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -177,7 +191,7 @@ export const RegisterPage = () => {
           
           <form onSubmit={handleSubmit}>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-2 relative z-10">
                 <Label htmlFor="name" className="text-slate-300">Full Name</Label>
                 <Input
                   id="name"
@@ -192,7 +206,7 @@ export const RegisterPage = () => {
                 />
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-2 relative z-10">
                 <Label htmlFor="username" className="text-slate-300">Username</Label>
                 <Input
                   id="username"
@@ -207,7 +221,7 @@ export const RegisterPage = () => {
                 />
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-2 relative z-10">
                 <Label htmlFor="email" className="text-slate-300">Email</Label>
                 <Input
                   id="email"
@@ -222,7 +236,7 @@ export const RegisterPage = () => {
                 />
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-2 relative z-10">
                 <Label htmlFor="password" className="text-slate-300">Password</Label>
                 <div className="relative">
                   <Input
@@ -246,7 +260,7 @@ export const RegisterPage = () => {
                 </div>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-2 relative z-10">
                 <Label htmlFor="confirmPassword" className="text-slate-300">Confirm Password</Label>
                 <div className="relative">
                   <Input
@@ -291,7 +305,7 @@ export const RegisterPage = () => {
               </Button>
               
               <div className="text-center text-sm text-slate-400 pt-2">
-                <p>Already have an account? <a href="/login" className="text-orange-400 hover:text-orange-300 transition-colors">Sign in</a></p>
+                <p>Already have an account? <button type="button" onClick={() => navigate('/login')} className="text-orange-400 hover:text-orange-300 transition-colors underline cursor-pointer z-50 relative">Sign in</button></p>
               </div>
               
               <div className="flex items-center gap-2 my-4">

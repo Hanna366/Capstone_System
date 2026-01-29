@@ -144,6 +144,10 @@ class AuthService {
       this.currentUser = googleUser;
       this.saveSession();
       
+      // Double-check the session is saved
+      const storedUser = localStorage.getItem(this.STORAGE_KEY);
+      console.log('Google auth - Stored user in localStorage:', storedUser);
+      
       toast.success(`Welcome, ${googleUser.name}! Signed in with Google.`);
       return this.currentUser;
     } catch (error) {
@@ -163,13 +167,51 @@ class AuthService {
     return this.currentUser;
   }
 
+  public setCurrentUser(user: User): void {
+    this.currentUser = user;
+    this.saveSession();
+  }
+
   public isAuthenticated(): boolean {
-    return this.currentUser !== null;
+    // Check localStorage directly - this is the source of truth
+    const storedUser = localStorage.getItem(this.STORAGE_KEY);
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        // Update in-memory state if needed
+        if (!this.currentUser) {
+          this.currentUser = user;
+        }
+        return user !== null;
+      } catch (e) {
+        console.error('Error parsing stored user:', e);
+        return false;
+      }
+    }
+    return false;
   }
 
   public hasRole(requiredRole: string): boolean {
     if (!this.currentUser) return false;
     return this.currentUser.role === requiredRole;
+  }
+
+  public refreshAuthState(): void {
+    // Always reload from localStorage to ensure fresh state
+    const storedUser = localStorage.getItem(this.STORAGE_KEY);
+    if (storedUser) {
+      try {
+        this.currentUser = JSON.parse(storedUser);
+        console.log('Auth state refreshed from localStorage:', this.currentUser);
+      } catch (e) {
+        console.error('Error refreshing auth state:', e);
+        this.currentUser = null;
+        localStorage.removeItem(this.STORAGE_KEY);
+      }
+    } else {
+      this.currentUser = null;
+      console.log('No stored auth state found');
+    }
   }
 }
 

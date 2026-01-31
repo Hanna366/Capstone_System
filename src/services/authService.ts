@@ -10,17 +10,21 @@ export interface User {
   id: string;
   username: string;
   name: string;
-  role: string;
+  role: 'admin' | 'user'; // admin and maintainer are the same
+  password: string;
 }
 
 class AuthService {
   private static instance: AuthService;
   private currentUser: User | null = null;
   private readonly STORAGE_KEY = "user_session";
+  private readonly USERS_KEY = "registered_users";
 
   private constructor() {
     // Check for existing session on initialization
     this.loadSession();
+    // Initialize with default admin account
+    this.initializeDefaultAccounts();
   }
 
   public static getInstance(): AuthService {
@@ -42,6 +46,31 @@ class AuthService {
     }
   }
 
+  private initializeDefaultAccounts(): void {
+    const existingUsers = localStorage.getItem(this.USERS_KEY);
+    if (!existingUsers) {
+      // Create default admin account
+      const defaultAdmin: User = {
+        id: "admin-001",
+        username: "admin",
+        name: "System Administrator",
+        role: "admin",
+        password: "admin123"
+      };
+      
+      localStorage.setItem(this.USERS_KEY, JSON.stringify([defaultAdmin]));
+    }
+  }
+
+  private getRegisteredUsers(): User[] {
+    const users = localStorage.getItem(this.USERS_KEY);
+    return users ? JSON.parse(users) : [];
+  }
+
+  private saveRegisteredUsers(users: User[]): void {
+    localStorage.setItem(this.USERS_KEY, JSON.stringify(users));
+  }
+
   private saveSession(): void {
     console.log('saveSession() called with currentUser:', this.currentUser);
     if (this.currentUser) {
@@ -57,16 +86,18 @@ class AuthService {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // In a real app, this would call your backend API for authentication
-      // For development purposes, we'll allow any username/password combination
-      // but in production, this should connect to your backend authentication system
-      this.currentUser = {
-        id: Math.random().toString(36).substr(2, 9),
-        username: credentials.username,
-        name: credentials.username.charAt(0).toUpperCase() + credentials.username.slice(1),
-        role: "user"
-      };
-      
+      // Check if user exists in registered users
+      const registeredUsers = this.getRegisteredUsers();
+      const user = registeredUsers.find(u => 
+        u.username === credentials.username && u.password === credentials.password
+      );
+
+      if (!user) {
+        toast.error("Invalid username or password. Please check your credentials.");
+        return null;
+      }
+
+      this.currentUser = user;
       this.saveSession();
       toast.success(`Welcome back, ${this.currentUser.name}!`);
       return this.currentUser;
@@ -118,6 +149,47 @@ class AuthService {
   }
 
   // Method to handle the callback from Google OAuth
+  public async register(credentials: LoginCredentials, role: 'admin' | 'user'): Promise<User | null> {
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Check if username already exists
+      const registeredUsers = this.getRegisteredUsers();
+      const existingUser = registeredUsers.find(u => u.username === credentials.username);
+      
+      if (existingUser) {
+        toast.error("Username already exists. Please choose a different username.");
+        return null;
+      }
+
+      // Create new user
+      const newUser: User = {
+        id: Math.random().toString(36).substr(2, 9),
+        username: credentials.username,
+        name: credentials.username.charAt(0).toUpperCase() + credentials.username.slice(1),
+        role: role,
+        password: credentials.password
+      };
+
+      // Save to registered users
+      registeredUsers.push(newUser);
+      this.saveRegisteredUsers(registeredUsers);
+
+      // Automatically log in the new user
+      this.currentUser = newUser;
+      this.saveSession();
+      
+      toast.success(`Account created successfully! Welcome, ${newUser.name}!`);
+      return this.currentUser;
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error("Registration failed. Please try again.");
+      return null;
+    }
+  }
+
+  // Method to handle the callback from Google OAuth
   public async handleGoogleCallback(code: string): Promise<User | null> {
     console.log('handleGoogleCallback called with code:', code);
     
@@ -144,7 +216,8 @@ class AuthService {
         id: `google_${Math.random().toString(36).substr(2, 9)}`,
         username: `google_user_${Math.random().toString(36).substr(2, 5)}`,
         name: "Google User", // In real app, this would come from Google's API
-        role: "user"
+        role: "user" as const,
+        password: "google_password"
       };
       
       console.log('Creating Google user:', googleUser);
@@ -204,9 +277,22 @@ class AuthService {
     return false;
   }
 
-  public hasRole(requiredRole: string): boolean {
+  public hasRole(requiredRole: 'admin' | 'user'): boolean {
     if (!this.currentUser) return false;
-    return this.currentUser.role === requiredRole;
+    
+    // Admin and maintainer are the same (both are 'admin' role)
+    if (requiredRole === 'admin') {
+      return this.currentUser.role === 'admin';
+    }
+    return true; // All users can access user-level features
+  }
+  
+  public isAdmin(): boolean {
+    return this.hasRole('admin');
+  }
+  
+  public isUser(): boolean {
+    return this.hasRole('user');
   }
 
   public refreshAuthState(): void {

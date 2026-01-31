@@ -9,6 +9,7 @@ import RegisterPage from "./pages/Register";
 import UnauthorizedPage from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 import GoogleCallbackPage from "./pages/GoogleCallback";
+import { AdminDashboard } from "./admin/AdminDashboard";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,14 @@ const router = createBrowserRouter(
       element: (
         <ProtectedRoute>
           <Index />
+        </ProtectedRoute>
+      )
+    },
+    {
+      path: "/admin",
+      element: (
+        <ProtectedRoute requiredRole="admin">
+          <AdminDashboard />
         </ProtectedRoute>
       )
     },

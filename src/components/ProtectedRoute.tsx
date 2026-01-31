@@ -4,7 +4,7 @@ import { authService } from "@/services/authService";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: string;
+  requiredRole?: 'admin' | 'user';
 }
 
 export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
@@ -15,57 +15,23 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
   useEffect(() => {
     // Check authentication and set loading state
     const checkAuth = () => {
-      // Log auth state for debugging
-      const storedUser = localStorage.getItem('user_session');
-      const initialIsAuthenticated = authService.isAuthenticated();
-      
-      console.log('ProtectedRoute check:', {
-        storedUser,
-        initialIsAuthenticated,
-        currentUser: authService.getCurrentUser()
-      });
-      
       // Force a refresh of the authentication state from localStorage
       authService.refreshAuthState();
       
-      const finalIsAuthenticated = authService.isAuthenticated();
+      const isAuthenticated = authService.isAuthenticated();
       
-      console.log('After refresh - isAuthenticated:', finalIsAuthenticated);
-      
-      if (!finalIsAuthenticated) {
-        // Double-check localStorage directly
-        const directCheck = !!localStorage.getItem('user_session');
-        console.log('Direct localStorage check:', directCheck);
-        
-        if (!directCheck) {
-          console.log('No user session found, redirecting to login');
-          navigate("/login");
-          setLoading(false);
-          return;
-        }
-        // If localStorage has data but authService says not authenticated, 
-        // force a refresh and try again
-        console.log('Found user session in localStorage, forcing refresh');
-        authService.refreshAuthState();
-        const afterSecondRefresh = authService.isAuthenticated();
-        console.log('After second refresh - isAuthenticated:', afterSecondRefresh);
-        
-        if (!afterSecondRefresh) {
-          console.log('Still not authenticated after second refresh, redirecting to login');
-          navigate("/login");
-          setLoading(false);
-          return;
-        }
+      if (!isAuthenticated) {
+        navigate("/login");
+        setLoading(false);
+        return;
       }
 
       if (requiredRole && !authService.hasRole(requiredRole)) {
-        console.log('User lacks required role, redirecting to unauthorized');
         navigate("/unauthorized", { replace: true });
         setLoading(false);
         return;
       }
       
-      console.log('Authentication check passed, allowing access');
       setLoading(false);
     };
     
@@ -75,18 +41,6 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
 
   // Show loading state while checking authentication
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-slate-400">Checking authentication...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show loading state while checking authentication
-  if (!authService.isAuthenticated()) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">

@@ -161,14 +161,24 @@ const Index = () => {
             <div className="hidden md:block">
               <NotificationCenter />
             </div>
-            <button className="p-3 rounded-full bg-gradient-to-r from-emerald-600/30 via-emerald-500/20 to-teal-600/30 hover:from-emerald-600/40 hover:via-emerald-500/30 hover:to-teal-600/40 text-white backdrop-blur-md border border-emerald-500/30 shadow-2xl transition-all duration-500 ease-out flex items-center justify-center w-14 h-14 group relative">
+            <button 
+              onClick={() => {
+                if (authService.hasRole('admin')) {
+                  navigate('/admin');
+                } else {
+                  toast.error('Admin access required for admin dashboard');
+                }
+              }}
+              className="p-3 rounded-full bg-gradient-to-r from-emerald-600/30 via-emerald-500/20 to-teal-600/30 hover:from-emerald-600/40 hover:via-emerald-500/30 hover:to-teal-600/40 text-white backdrop-blur-md border border-emerald-500/30 shadow-2xl transition-all duration-500 ease-out flex items-center justify-center w-14 h-14 group relative"
+              title="Admin Dashboard"
+            >
               <div className="relative">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 transition-transform duration-500 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                 </svg>
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400/10 to-teal-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               </div>
-              <span className="absolute -bottom-8 text-xs text-white whitespace-nowrap bg-black/50 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">Maintenance</span>
+              <span className="absolute -bottom-8 text-xs text-white whitespace-nowrap bg-black/50 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">Admin</span>
             </button>
           </div>
         </header>

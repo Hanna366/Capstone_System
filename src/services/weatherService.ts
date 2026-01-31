@@ -39,6 +39,11 @@ class WeatherService {
         `${this.baseUrl}?q=${encodeURIComponent(city)}&appid=${this.apiKey}&units=metric`
       );
 
+      if (response.status === 401) {
+        console.warn('Weather API key is invalid or unauthorized. Falling back to mock data.');
+        return this.getMockWeatherData();
+      }
+
       if (!response.ok) {
         throw new Error(`Weather API error: ${response.status} ${response.statusText}`);
       }

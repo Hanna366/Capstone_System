@@ -15,9 +15,6 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
   useEffect(() => {
     // Check authentication and set loading state
     const checkAuth = () => {
-<<<<<<< HEAD
-      // Force refresh auth state from localStorage
-=======
       // Log auth state for debugging
       const storedUser = localStorage.getItem('user_session');
       const initialIsAuthenticated = authService.isAuthenticated();
@@ -29,25 +26,10 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
       });
       
       // Force a refresh of the authentication state from localStorage
->>>>>>> a080b8c0bc6bc5bc6deddbf335448bb506aea5ae
       authService.refreshAuthState();
       
-      const isAuthenticated = authService.isAuthenticated();
-      const currentUser = authService.getCurrentUser();
+      const finalIsAuthenticated = authService.isAuthenticated();
       
-<<<<<<< HEAD
-      console.log('ProtectedRoute check:', {
-        isAuthenticated,
-        currentUser,
-        localStorageUser: localStorage.getItem('user_session')
-      });
-      
-      if (!isAuthenticated || !currentUser) {
-        console.log('User not authenticated, redirecting to login');
-        navigate("/login", { replace: true });
-        setLoading(false);
-        return;
-=======
       console.log('After refresh - isAuthenticated:', finalIsAuthenticated);
       
       if (!finalIsAuthenticated) {
@@ -74,7 +56,6 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
           setLoading(false);
           return;
         }
->>>>>>> a080b8c0bc6bc5bc6deddbf335448bb506aea5ae
       }
 
       if (requiredRole && !authService.hasRole(requiredRole)) {
@@ -84,21 +65,12 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
         return;
       }
       
-<<<<<<< HEAD
-      console.log('User authenticated, allowing access to protected route');
-=======
       console.log('Authentication check passed, allowing access');
->>>>>>> a080b8c0bc6bc5bc6deddbf335448bb506aea5ae
       setLoading(false);
     };
     
     // Check immediately on mount
     checkAuth();
-    
-    // Also check when the component re-renders
-    const interval = setInterval(checkAuth, 1000);
-    
-    return () => clearInterval(interval);
   }, [navigate, requiredRole]);
 
   // Show loading state while checking authentication

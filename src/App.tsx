@@ -9,7 +9,6 @@ import RegisterPage from "./pages/Register";
 import UnauthorizedPage from "./pages/Unauthorized";
 import NotFound from "./pages/NotFound";
 import GoogleCallbackPage from "./pages/GoogleCallback";
-import DebugPage from "./pages/Debug";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -39,14 +38,6 @@ const router = createBrowserRouter(
           <Index />
         </ProtectedRoute>
       )
-    },
-    {
-      path: "/google-callback",
-      element: <GoogleCallbackPage />
-    },
-    {
-      path: "/debug",
-      element: <DebugPage />
     },
 
     {

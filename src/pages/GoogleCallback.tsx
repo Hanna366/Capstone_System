@@ -17,7 +17,8 @@ export const GoogleCallbackPage = () => {
       if (error) {
         console.error('Google OAuth error:', error);
         toast.error(`Google login failed: ${error}`);
-        navigate('/login');
+        console.log('Full URL with error:', window.location.href);
+        navigate('/login', { replace: true });
         return;
       }
 
@@ -28,11 +29,16 @@ export const GoogleCallbackPage = () => {
           const user = await authService.handleGoogleCallback(code);
           
           if (user) {
-            // Redirect to dashboard on successful authentication
-            navigate('/');
+            // Force refresh auth state and redirect to dashboard
+            authService.refreshAuthState();
+            console.log('Google auth successful, redirecting to dashboard');
+            // Small delay to ensure localStorage is set
+            setTimeout(() => {
+              navigate('/', { replace: true });
+            }, 100);
           } else {
             toast.error('Failed to authenticate with Google');
-            navigate('/login');
+            navigate('/login', { replace: true });
           }
         } catch (err) {
           console.error('Error handling Google callback:', err);

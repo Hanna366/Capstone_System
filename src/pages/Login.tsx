@@ -46,9 +46,11 @@ export const LoginPage = () => {
     try {
       const user = await authService.login(credentials);
       if (user) {
+        // Refresh auth state and navigate to dashboard
+        authService.refreshAuthState();
         // Navigate to dashboard after successful login
         setTimeout(() => {
-          navigate("/");
+          navigate("/", { replace: true });
         }, 300);
       }
     } finally {

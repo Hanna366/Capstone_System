@@ -15,40 +15,43 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
   useEffect(() => {
     // Check authentication and set loading state
     const checkAuth = () => {
-      // Log auth state for debugging
-      const storedUser = localStorage.getItem('user_session');
-      const isAuthenticated = authService.isAuthenticated();
-      
-      console.log('ProtectedRoute check:', {
-        storedUser,
-        isAuthenticated,
-        currentUser: authService.getCurrentUser()
-      });
-      
-      // Force a refresh of the authentication state from localStorage
+      // Force refresh auth state from localStorage
       authService.refreshAuthState();
       
-      const finalIsAuthenticated = authService.isAuthenticated();
+      const isAuthenticated = authService.isAuthenticated();
+      const currentUser = authService.getCurrentUser();
       
-      if (!finalIsAuthenticated) {
-        navigate("/login");
+      console.log('ProtectedRoute check:', {
+        isAuthenticated,
+        currentUser,
+        localStorageUser: localStorage.getItem('user_session')
+      });
+      
+      if (!isAuthenticated || !currentUser) {
+        console.log('User not authenticated, redirecting to login');
+        navigate("/login", { replace: true });
         setLoading(false);
         return;
       }
 
       if (requiredRole && !authService.hasRole(requiredRole)) {
-        navigate("/unauthorized");
+        console.log('User lacks required role, redirecting to unauthorized');
+        navigate("/unauthorized", { replace: true });
         setLoading(false);
         return;
       }
       
+      console.log('User authenticated, allowing access to protected route');
       setLoading(false);
     };
     
-    // Also check immediately on mount
+    // Check immediately on mount
     checkAuth();
-
-    checkAuth();
+    
+    // Also check when the component re-renders
+    const interval = setInterval(checkAuth, 1000);
+    
+    return () => clearInterval(interval);
   }, [navigate, requiredRole]);
 
   // Show loading state while checking authentication

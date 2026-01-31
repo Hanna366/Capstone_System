@@ -147,6 +147,7 @@ class AuthService {
       // Double-check the session is saved
       const storedUser = localStorage.getItem(this.STORAGE_KEY);
       console.log('Google auth - Stored user in localStorage:', storedUser);
+      console.log('Google auth - Current user in memory:', this.currentUser);
       
       toast.success(`Welcome, ${googleUser.name}! Signed in with Google.`);
       return this.currentUser;
@@ -173,21 +174,22 @@ class AuthService {
   }
 
   public isAuthenticated(): boolean {
-    // Check localStorage directly - this is the source of truth
+    // Always check localStorage directly - this is the source of truth
     const storedUser = localStorage.getItem(this.STORAGE_KEY);
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
-        // Update in-memory state if needed
-        if (!this.currentUser) {
-          this.currentUser = user;
-        }
-        return user !== null;
+        // Always sync in-memory state with localStorage
+        this.currentUser = user;
+        return user !== null && user.id !== undefined;
       } catch (e) {
         console.error('Error parsing stored user:', e);
+        this.currentUser = null;
+        localStorage.removeItem(this.STORAGE_KEY);
         return false;
       }
     }
+    this.currentUser = null;
     return false;
   }
 
@@ -197,12 +199,13 @@ class AuthService {
   }
 
   public refreshAuthState(): void {
-    // Always reload from localStorage to ensure fresh state
+    // Force reload from localStorage to ensure fresh state
     const storedUser = localStorage.getItem(this.STORAGE_KEY);
     if (storedUser) {
       try {
-        this.currentUser = JSON.parse(storedUser);
-        console.log('Auth state refreshed from localStorage:', this.currentUser);
+        const user = JSON.parse(storedUser);
+        this.currentUser = user;
+        console.log('Auth state refreshed from localStorage:', user);
       } catch (e) {
         console.error('Error refreshing auth state:', e);
         this.currentUser = null;

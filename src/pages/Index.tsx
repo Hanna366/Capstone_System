@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Cloud } from "lucide-react";
 import { StatusBanner } from "@/components/StatusBanner";
 import { SolarPowerCard } from "@/components/SolarPowerCard";
 import { WeatherCard } from "@/components/WeatherCard";
@@ -12,10 +13,14 @@ import { NotificationCenter } from "@/components/NotificationCenter";
 import { CoverStatusCard } from "@/components/CoverStatusCard";
 import { blynkService, type DeviceData } from "@/services/blynkService";
 import { authService } from "@/services/authService";
+import { weatherService, type WeatherData } from "@/services/weatherService";
 import { toast } from "sonner";
 
 const Index = () => {
   const [deviceData, setDeviceData] = useState<DeviceData | null>(null);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [weatherLoading, setWeatherLoading] = useState(true);
+  const [weatherError, setWeatherError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -25,6 +30,73 @@ const Index = () => {
   }, []);
   
   const currentUser = authService.getCurrentUser();
+
+  // Fetch weather data on component mount
+  useEffect(() => {
+    const fetchWeatherData = async () => {
+      try {
+        setWeatherLoading(true);
+        setWeatherError(null);
+        
+        // First test the API key
+        const isApiKeyValid = await weatherService.testApiKey();
+        if (!isApiKeyValid) {
+          setWeatherError('Invalid API key. Please get a free key from OpenWeatherMap');
+          setWeatherLoading(false);
+          return;
+        }
+        
+        let weatherData;
+        
+        // Try to get user's location first
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (position) => {
+              console.log('Got user location:', position.coords.latitude, position.coords.longitude);
+              weatherData = await weatherService.getCurrentWeatherByLocation(
+                position.coords.latitude, 
+                position.coords.longitude
+              );
+              if (weatherData) {
+                setWeatherData(weatherData);
+                console.log('Weather data fetched by location:', weatherData);
+              }
+              setWeatherLoading(false);
+            },
+            async (error) => {
+              console.warn('Geolocation error:', error);
+              // Fallback to Manila if geolocation fails
+              weatherData = await weatherService.getCurrentWeather();
+              if (weatherData) {
+                setWeatherData(weatherData);
+                console.log('Weather data fetched by city:', weatherData);
+              }
+              setWeatherLoading(false);
+            }
+          );
+        } else {
+          // Fallback to city-based weather if geolocation not supported
+          weatherData = await weatherService.getCurrentWeather();
+          if (weatherData) {
+            setWeatherData(weatherData);
+            console.log('Weather data fetched by city:', weatherData);
+          }
+          setWeatherLoading(false);
+        }
+      } catch (error) {
+        console.error('Error fetching weather data:', error);
+        setWeatherError('Failed to fetch weather data');
+        setWeatherLoading(false);
+      }
+    };
+
+    fetchWeatherData();
+    
+    // Refresh weather data every 5 minutes
+    const weatherInterval = setInterval(fetchWeatherData, 5 * 60 * 1000);
+    
+    return () => clearInterval(weatherInterval);
+  }, []);
 
   useEffect(() => {
     console.log('Index page loaded, checking for Google OAuth callback');
@@ -186,17 +258,18 @@ const Index = () => {
             <div className="h-full flex flex-col">
               <div className="flex-grow">
                 <WeatherAnalysisCard
-                  temperature={deviceData?.temperature || 51}
-                  humidity={deviceData?.humidity || 0}
-                  uvIndex={deviceData?.uvIndex || 7}
-                  windSpeed={deviceData?.windSpeed || 38}
+                  temperature={weatherData?.temperature || deviceData?.temperature || 51}
+                  humidity={weatherData?.humidity || deviceData?.humidity || 0}
+                  uvIndex={weatherData?.uvIndex || deviceData?.uvIndex || 7}
+                  windSpeed={weatherData?.windSpeed || deviceData?.windSpeed || 38}
+                  isLiveWeatherData={!!weatherData}
                 />
               </div>
               <div className="mt-4">
                 <CoverStatusCard
-                  windSpeed={deviceData?.windSpeed || 38}
-                  humidity={deviceData?.humidity || 0}
-                  temperature={deviceData?.temperature || 51}
+                  windSpeed={weatherData?.windSpeed || deviceData?.windSpeed || 38}
+                  humidity={weatherData?.humidity || deviceData?.humidity || 0}
+                  temperature={weatherData?.temperature || deviceData?.temperature || 51}
                 />
               </div>
             </div>

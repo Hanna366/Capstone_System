@@ -1,4 +1,4 @@
-import { Sun, Thermometer } from "lucide-react";
+import { Sun, Thermometer, Droplets } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useEffect } from "react";
 import { notificationService } from "@/services/notificationService";
@@ -8,13 +8,15 @@ interface WeatherAnalysisCardProps {
   humidity: number;
   uvIndex: number;
   windSpeed: number;
+  isLiveWeatherData?: boolean;
 }
 
 export const WeatherAnalysisCard = ({ 
   temperature, 
   humidity, 
   uvIndex, 
-  windSpeed 
+  windSpeed,
+  isLiveWeatherData = false
 }: WeatherAnalysisCardProps) => {
   // Calculate comfort level based on various factors
   
@@ -178,10 +180,10 @@ export const WeatherAnalysisCard = ({
           <div className="p-4 bg-slate-700/30 rounded-2xl border border-slate-700/50">
             <div className="flex items-center gap-3 mb-2">
               <Thermometer className="h-6 w-6 text-orange-400" />
-              <span className="text-sm font-medium text-gray-300">Temp</span>
+              <span className="text-sm font-medium text-gray-300">Temperature</span>
             </div>
             <div className="text-4xl font-bold text-white leading-none mb-1">{temperature}°C</div>
-            <div className="text-xs text-gray-400">(Internal)</div>
+            <div className="text-xs text-gray-400">({isLiveWeatherData ? 'Live API' : 'Internal Sensor'})</div>
           </div>
 
           <div className="p-4 bg-slate-700/30 rounded-2xl border border-slate-700/50">
@@ -197,18 +199,31 @@ export const WeatherAnalysisCard = ({
               <span className="text-sm font-medium text-gray-300">Wind</span>
             </div>
             <div className="text-4xl font-bold text-white leading-none">{windSpeed} km/h</div>
+            <div className="text-xs text-gray-400">Real-time</div>
           </div>
         </div>
 
         {/* Divider */}
         <div className="border-t border-slate-700/50"></div>
 
-        <div className="p-4 bg-slate-700/30 rounded-2xl border border-slate-700/50">
-          <div className="flex items-center gap-3 mb-2">
-            <Sun className="h-6 w-6 text-yellow-400" />
-            <span className="text-sm font-medium text-gray-300">UV Index</span>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 bg-slate-700/30 rounded-2xl border border-slate-700/50">
+            <div className="flex items-center gap-3 mb-2">
+              <Sun className="h-6 w-6 text-yellow-400" />
+              <span className="text-sm font-medium text-gray-300">UV Index</span>
+            </div>
+            <div className="text-4xl font-bold text-white leading-none">{uvIndex}</div>
+            <div className="text-xs text-gray-400">Time-based</div>
           </div>
-          <div className="text-4xl font-bold text-white leading-none">{uvIndex}</div>
+
+          <div className="p-4 bg-slate-700/30 rounded-2xl border border-slate-700/50">
+            <div className="flex items-center gap-3 mb-2">
+              <Droplets className="h-6 w-6 text-blue-400" />
+              <span className="text-sm font-medium text-gray-300">Humidity</span>
+            </div>
+            <div className="text-4xl font-bold text-white leading-none">{humidity}%</div>
+            <div className="text-xs text-gray-400">Moisture level</div>
+          </div>
         </div>
 
         {/* Divider */}

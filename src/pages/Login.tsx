@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, EyeOff, Sun, Mail, Chrome } from "lucide-react";
 import { authService, type LoginCredentials } from "@/services/authService";
 import { GoogleAccountSelector } from "@/components/GoogleAccountSelector";
+import { RecaptchaComponent } from "@/components/RecaptchaComponent";
 import { toast } from "sonner";
 
 export const LoginPage = () => {
@@ -17,6 +18,7 @@ export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showGoogleSelector, setShowGoogleSelector] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const navigate = useNavigate();
   
   // Check if user is already authenticated and redirect
@@ -42,10 +44,15 @@ export const LoginPage = () => {
       return;
     }
 
+    if (!recaptchaToken) {
+      toast.error("Please complete the reCAPTCHA verification");
+      return;
+    }
+
     setIsLoading(true);
     try {
       console.log('Attempting regular login with credentials:', credentials);
-      const user = await authService.login(credentials);
+      const user = await authService.login(credentials, recaptchaToken);
       console.log('Regular login result:', user);
       console.log('Auth state after regular login:', {
         isAuthenticated: authService.isAuthenticated(),
@@ -189,6 +196,20 @@ export const LoginPage = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+              </div>
+              
+              <div className="space-y-2 relative z-10">
+                <RecaptchaComponent
+                  onVerify={setRecaptchaToken}
+                  onExpired={() => {
+                    setRecaptchaToken(null);
+                    toast.warning("reCAPTCHA expired. Please verify again.");
+                  }}
+                  onError={() => {
+                    setRecaptchaToken(null);
+                    toast.error("reCAPTCHA error. Please try again.");
+                  }}
+                />
               </div>
             </CardContent>
             

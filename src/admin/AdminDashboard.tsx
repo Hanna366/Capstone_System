@@ -43,10 +43,10 @@ export const AdminDashboard = () => {
         
         // Load devices (in a real app, this would come from an API)
         const mockDevices: Device[] = [
-          { id: 'dev-001', name: 'Solar Rack #1', blynkId: 'BLYNK_ID_001', status: 'online', location: 'Building A, Rooftop', lastActive: '2023-05-15 10:30:45' },
-          { id: 'dev-002', name: 'Solar Rack #2', blynkId: 'BLYNK_ID_002', status: 'online', location: 'Building B, Yard', lastActive: '2023-05-15 11:20:30' },
-          { id: 'dev-003', name: 'Solar Rack #3', blynkId: 'BLYNK_ID_003', status: 'offline', location: 'Building C, Terrace', lastActive: '2023-05-14 16:45:20' },
-          { id: 'dev-004', name: 'Solar Rack #4', blynkId: 'BLYNK_ID_004', status: 'maintenance', location: 'Building D, Balcony', lastActive: '2023-05-15 09:15:10' },
+          { id: 'dev-001', name: 'Drying Rack #1', blynkId: 'Not Connected', status: 'offline', location: 'Building A, Rooftop', lastActive: 'Never connected' },
+          { id: 'dev-002', name: 'Drying Rack #2', blynkId: 'Not Connected', status: 'offline', location: 'Building B, Yard', lastActive: 'Never connected' },
+          { id: 'dev-003', name: 'Drying Rack #3', blynkId: 'Not Connected', status: 'offline', location: 'Building C, Terrace', lastActive: 'Never connected' },
+          { id: 'dev-004', name: 'Drying Rack #4', blynkId: 'Not Connected', status: 'offline', location: 'Building D, Balcony', lastActive: 'Never connected' },
         ];
 
         setUsers(existingUsers);
@@ -545,14 +545,6 @@ export const AdminDashboard = () => {
                     <th className="px-6 py-4 text-left text-sm font-semibold text-blue-300 uppercase tracking-wider">
                       <div className="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                        Blynk ID
-                      </div>
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-blue-300 uppercase tracking-wider">
-                      <div className="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
@@ -588,9 +580,6 @@ export const AdminDashboard = () => {
                             <div className="text-xs text-slate-400">ID: {device.id}</div>
                           </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-slate-300 font-mono bg-slate-700/40 px-2 py-1 rounded">{device.blynkId}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300 max-w-xs">
                         <div className="flex items-start gap-2">

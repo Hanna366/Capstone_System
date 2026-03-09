@@ -3,19 +3,28 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
 interface SolarPowerCardProps {
-  batteryLevel: number;
-  isCharging: boolean;
-  currentOutput: number;
+  batteryLevel?: number;
+  isCharging?: boolean;
+  currentOutput?: number;
+  isConnected?: boolean;
 }
 
-export const SolarPowerCard = ({ batteryLevel, isCharging, currentOutput }: SolarPowerCardProps) => {
+export const SolarPowerCard = ({ batteryLevel = 0, isCharging = false, currentOutput = 0, isConnected = false }: SolarPowerCardProps) => {
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (batteryLevel / 100) * circumference;
 
   return (
-    <Card className="p-6 bg-slate-800/50 backdrop-blur-sm rounded-3xl shadow-2xl border border-slate-700/50 hover:border-orange-500/30 transition-all duration-300 hover:shadow-orange-500/20 hover:scale-[1.02]">
-      <h2 className="text-2xl font-semibold text-white mb-5 bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">Solar Power</h2>
+    <Card className={`p-6 backdrop-blur-sm rounded-3xl shadow-2xl border transition-all duration-300 hover:scale-[1.02] ${
+      isConnected 
+        ? 'bg-slate-800/50 border-slate-700/50 hover:border-orange-500/30 hover:shadow-orange-500/20'
+        : 'bg-red-900/30 border-red-800/50 hover:border-red-700/30 hover:shadow-red-500/20'
+    }`}>
+      <h2 className={`text-2xl font-semibold mb-5 bg-clip-text text-transparent ${
+        isConnected
+          ? 'bg-gradient-to-r from-orange-400 to-amber-400'
+          : 'bg-gradient-to-r from-red-400 to-rose-400'
+      }`}>Solar Power</h2>
 
       <div className="space-y-5">
         {/* Circular Progress and Output - Side by side */}

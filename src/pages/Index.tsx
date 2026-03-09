@@ -279,15 +279,17 @@ const Index = () => {
           <div className="lg:col-span-1 space-y-6 -mt-6">
             <StatusBanner
               title="System Status"
-              message="Connected"
-              variant={deviceData?.connected ? "success" : "warning"}
-              isCharging={!!deviceData?.isCharging}
+              message="Not Connected"
+              variant="warning"
+              isCharging={false}
+              isBlynkConnected={false}
             />
 
             <SolarPowerCard
-              batteryLevel={deviceData?.batteryLevel || 94}
-              isCharging={!!deviceData?.isCharging}
-              currentOutput={deviceData?.currentOutput || 126.57}
+              batteryLevel={0}
+              isCharging={false}
+              currentOutput={0}
+              isConnected={false}
             />
 
             <RackControlCard

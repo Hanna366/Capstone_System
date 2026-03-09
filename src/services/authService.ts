@@ -99,10 +99,19 @@ class AuthService {
     }
   }
 
-  public async login(credentials: LoginCredentials): Promise<User | null> {
+  public async login(credentials: LoginCredentials, recaptchaToken?: string): Promise<User | null> {
     try {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Verify reCAPTCHA token if provided
+      if (recaptchaToken) {
+        const isValidRecaptcha = await this.verifyRecaptchaToken(recaptchaToken);
+        if (!isValidRecaptcha) {
+          toast.error("reCAPTCHA verification failed. Please try again.");
+          return null;
+        }
+      }
 
       // Check if user exists in registered users
       const registeredUsers = this.getRegisteredUsers();
@@ -133,6 +142,31 @@ class AuthService {
       console.error("Login error:", error);
       toast.error("Login failed. Please try again.");
       return null;
+    }
+  }
+
+  private async verifyRecaptchaToken(token: string): Promise<boolean> {
+    try {
+      console.log('reCAPTCHA token received:', token.substring(0, 10) + '...');
+      
+      // For development: accept any valid-looking reCAPTCHA token
+      // In production, you would verify with Google's API on your backend
+      // Frontend should NOT contain the secret key for security reasons
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // For demo: accept tokens that look like reCAPTCHA tokens (length > 30)
+      const isValid = token && token.length > 30;
+      
+      if (!isValid) {
+        console.error('Invalid reCAPTCHA token format');
+      }
+      
+      return isValid;
+    } catch (error) {
+      console.error('reCAPTCHA verification error:', error);
+      return false;
     }
   }
 

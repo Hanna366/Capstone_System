@@ -42,27 +42,22 @@ const Index = () => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
     localStorage.setItem('themeMode', themeMode);
-  }, [theme, themeMode]);
+  }, [themeMode]);
 
   // Auto theme switching based on time
   useEffect(() => {
     if (themeMode === 'auto') {
-      const checkTimeBasedTheme = () => {
-        const timeBasedTheme = getTimeBasedTheme();
-        if (timeBasedTheme !== theme) {
-          setTheme(timeBasedTheme);
-        }
+      const updateTheme = () => {
+        const newTheme = getTimeBasedTheme();
+        setTheme(newTheme); // Always update theme to ensure it reflects changes
       };
 
-      // Check immediately
-      checkTimeBasedTheme();
+      updateTheme(); // Ensure the theme is updated immediately on mount
+      const interval = setInterval(updateTheme, 60000); // Check every minute
 
-      // Check every minute
-      const interval = setInterval(checkTimeBasedTheme, 60000);
-      
-      return () => clearInterval(interval);
+      return () => clearInterval(interval); // Cleanup on unmount
     }
-  }, [themeMode, theme]);
+  }, [themeMode]); // Removed `theme` from dependency array to avoid redundant updates
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');

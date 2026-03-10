@@ -16,27 +16,27 @@ import { authService } from "@/services/authService";
 import { weatherService, type WeatherData } from "@/services/weatherService";
 import { toast } from "sonner";
 
+// Function to determine time-based theme
+const getTimeBasedTheme = (): 'light' | 'dark' => {
+  const hour = new Date().getHours();
+  // Daytime: 6 AM - 6 PM
+  return (hour >= 6 && hour < 18) ? 'light' : 'dark';
+};
+
 const Index = () => {
   const [deviceData, setDeviceData] = useState<DeviceData | null>(null);
   const [themeMode, setThemeMode] = useState<'manual' | 'auto'>(() => localStorage.getItem('themeMode') as 'manual' | 'auto' || 'manual');
   const [theme, setTheme] = useState(() => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
     const savedMode = localStorage.getItem('themeMode') || 'manual';
-    
+
     // If auto mode, calculate time-based theme
     if (savedMode === 'auto') {
       return getTimeBasedTheme();
     }
-    
+
     return savedTheme;
   });
-
-  // Function to determine time-based theme
-  const getTimeBasedTheme = (): 'light' | 'dark' => {
-    const hour = new Date().getHours();
-    // Daytime: 6 AM - 6 PM
-    return (hour >= 6 && hour < 18) ? 'light' : 'dark';
-  };
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);

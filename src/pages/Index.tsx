@@ -191,47 +191,106 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-6 lg:p-8 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(251,146,60,0.1)_0%,transparent_50%),radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.1)_0%,transparent_50%)]"></div>
-      <div className="max-w-7xl mx-auto space-y-6 relative z-10">
+    <div className={`min-h-screen p-4 md:p-6 lg:p-8 relative overflow-hidden transition-colors duration-300 ${
+      theme === 'dark' 
+        ? 'bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950' 
+        : 'bg-gradient-to-br from-slate-50 via-white to-slate-100'
+    }`}>
+      {/* Enhanced Background Effects */}
+      <div className="absolute inset-0">
+        <div className={`absolute inset-0 ${
+          theme === 'dark'
+            ? 'bg-[radial-gradient(ellipse_at_top_left,rgba(251,146,60,0.15)_0%,transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.15)_0%,transparent_40%)]'
+            : 'bg-[radial-gradient(ellipse_at_top_left,rgba(251,146,60,0.08)_0%,transparent_40%),radial-gradient(ellipse_at_bottom_right,rgba(59,130,246,0.08)_0%,transparent_40%)]'
+        }`}></div>
+        <div className={`absolute inset-0 ${
+          theme === 'dark'
+            ? 'bg-gradient-to-t from-slate-950/50 via-transparent to-slate-950/30'
+            : 'bg-gradient-to-t from-white/30 via-transparent to-slate-50/20'
+        }`}></div>
+        {/* Animated particles */}
+        <div className={`absolute top-20 left-10 w-2 h-2 rounded-full animate-pulse ${
+          theme === 'dark' ? 'bg-orange-400/30' : 'bg-orange-500/20'
+        }`}></div>
+        <div className={`absolute top-40 right-20 w-3 h-3 rounded-full animate-pulse delay-75 ${
+          theme === 'dark' ? 'bg-blue-400/30' : 'bg-blue-500/20'
+        }`}></div>
+        <div className={`absolute bottom-30 left-30 w-2 h-2 rounded-full animate-pulse delay-150 ${
+          theme === 'dark' ? 'bg-amber-400/30' : 'bg-amber-500/20'
+        }`}></div>
+        <div className={`absolute top-60 left-60 w-1 h-1 rounded-full animate-pulse delay-300 ${
+          theme === 'dark' ? 'bg-cyan-400/30' : 'bg-cyan-500/20'
+        }`}></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto space-y-8 relative z-10">
 
-        {/* HEADER */}
-        <header className="flex items-center justify-between gap-6 mb-8">
+        {/* ENHANCED HEADER */}
+        <header className={`flex items-center justify-between gap-6 mb-8 backdrop-blur-sm rounded-3xl p-6 border shadow-2xl transition-colors duration-300 ${
+          theme === 'dark'
+            ? 'bg-slate-900/30 border-slate-800/50'
+            : 'bg-white/80 border-slate-200/50'
+        }`}>
           <div className="flex items-center gap-6">
-            <div className="relative scale-75 animate-pulse-slow">
-              <img
-                src="/logo.png"
-                alt="Smart Drying Rack Logo"
-                className="h-48 w-auto drop-shadow-2xl brightness-125 contrast-125 saturate-150"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/40 via-transparent to-blue-500/40 rounded-full blur-lg animate-pulse"></div>
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-400/30 to-blue-400/30 rounded-full opacity-80"></div>
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 to-blue-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-300"></div>
+              <div className="relative">
+                <img
+                  src="/logo.png"
+                  alt="Smart Drying Rack Logo"
+                  className="h-16 w-auto drop-shadow-xl brightness-110 contrast-110 saturate-130 transition-transform duration-300 group-hover:scale-105"
+                />
+              </div>
             </div>
-            <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-300 to-blue-500 pb-4 animate-fade-in">
-              Smart Drying
-            </h1>
+            <div>
+              <h1 className={`text-4xl md:text-5xl font-bold leading-tight ${
+                theme === 'dark'
+                  ? 'text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-300 to-blue-500'
+                  : 'text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-amber-500 to-blue-600'
+              }`}>
+                Smart Drying
+              </h1>
+              <p className={`text-sm mt-1 ${
+                theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+              }`}>Intelligent Weather-Based Rack Control</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="ml-2 mb-3 flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-600/50 bg-slate-800/60 hover:bg-slate-700/60 backdrop-blur-sm transition-all duration-300 group"
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border backdrop-blur-sm transition-all duration-300 group shadow-lg ${
+                theme === 'dark'
+                  ? 'border-slate-700/50 bg-slate-800/60 hover:bg-slate-700/60'
+                  : 'border-slate-300/50 bg-slate-100/60 hover:bg-slate-200/60'
+              }`}
               aria-label="Toggle theme"
             >
               {theme === 'dark' ? (
-                <Moon className="h-4 w-4 text-blue-400 transition-transform duration-300 group-hover:rotate-12" />
+                <Moon className="h-5 w-5 text-blue-400 transition-transform duration-300 group-hover:rotate-12" />
               ) : (
-                <Sun className="h-4 w-4 text-amber-400 transition-transform duration-300 group-hover:rotate-45" />
+                <Sun className="h-5 w-5 text-amber-500 transition-transform duration-300 group-hover:rotate-45" />
               )}
-              <span className="text-sm text-slate-300 font-medium">
+              <span className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+              }`}>
                 {theme === 'dark' ? 'Dark' : 'Light'}
               </span>
             </button>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* User Info and Admin Button */}
-            <div className="hidden md:flex items-center gap-3 mr-4">
+
+            {/* User Section */}
+            <div className="hidden md:flex items-center gap-4 mr-2">
               <div className="text-right">
-                <p className="text-white font-medium">{currentUser?.name}</p>
-                <p className="text-slate-400 text-sm capitalize">{currentUser?.role}</p>
+                <p className={`font-semibold ${
+                  theme === 'dark' ? 'text-white' : 'text-slate-800'
+                }`}>{currentUser?.name}</p>
+                <p className={`text-sm capitalize ${
+                  theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                }`}>{currentUser?.role}</p>
               </div>
+              
+              {/* Admin Button */}
               <button 
                 onClick={() => {
                   if (authService.hasRole('admin')) {
@@ -240,94 +299,174 @@ const Index = () => {
                     toast.error('Admin access required for admin dashboard');
                   }
                 }}
-                className="p-2 rounded-lg bg-gradient-to-r from-emerald-600/30 via-emerald-500/20 to-teal-600/30 hover:from-emerald-600/40 hover:via-emerald-500/30 hover:to-teal-600/40 text-white backdrop-blur-md border border-emerald-500/30 shadow-2xl transition-all duration-500 ease-out flex items-center justify-center w-14 h-14 group relative"
+                className={`p-3 rounded-2xl backdrop-blur-md border shadow-xl transition-all duration-500 ease-out flex items-center justify-center w-12 h-12 group relative ${
+                  theme === 'dark'
+                    ? 'bg-gradient-to-r from-emerald-600/30 via-emerald-500/20 to-teal-600/30 hover:from-emerald-600/40 hover:via-emerald-500/30 hover:to-teal-600/40 border-emerald-500/30'
+                    : 'bg-gradient-to-r from-emerald-500/30 via-emerald-400/20 to-teal-500/30 hover:from-emerald-500/40 hover:via-emerald-400/30 hover:to-teal-500/40 border-emerald-400/30'
+                }`}
                 title="Admin Dashboard"
               >
-                <div className="relative">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transition-transform duration-500 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                  </svg>
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-400/10 to-teal-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                </div>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transition-transform duration-500 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+                <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
+                  theme === 'dark'
+                    ? 'bg-gradient-to-r from-emerald-400/10 to-teal-400/10'
+                    : 'bg-gradient-to-r from-emerald-300/10 to-teal-300/10'
+                }`}></div>
               </button>
             </div>
             
+            {/* Notification Center - Aligned with logout button */}
             <div className="hidden md:block">
               <NotificationCenter />
             </div>
+            
+            {/* Logout Button */}
             <button 
               onClick={() => {
                 authService.logout();
                 navigate('/login');
               }}
-              className="p-3 rounded-full bg-gradient-to-r from-rose-600/30 via-rose-500/20 to-pink-600/30 hover:from-rose-600/40 hover:via-rose-500/30 hover:to-pink-600/40 text-white backdrop-blur-md border border-rose-500/30 shadow-2xl transition-all duration-500 ease-out flex items-center justify-center w-14 h-14 group"
+              className={`p-3 rounded-2xl backdrop-blur-md border shadow-xl transition-all duration-500 ease-out flex items-center justify-center w-12 h-12 group ${
+                theme === 'dark'
+                  ? 'bg-gradient-to-r from-rose-600/30 via-rose-500/20 to-pink-600/30 hover:from-rose-600/40 hover:via-rose-500/30 hover:to-pink-600/40 border-rose-500/30'
+                  : 'bg-gradient-to-r from-rose-500/30 via-rose-400/20 to-pink-500/30 hover:from-rose-500/40 hover:via-rose-400/30 hover:to-pink-500/40 border-rose-400/30'
+              }`}
               title="Logout"
             >
-              <div className="relative">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 transition-transform duration-500 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-rose-400/10 to-pink-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-              </div>
-              <span className="absolute -bottom-8 text-xs text-white whitespace-nowrap bg-black/50 px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">Logout</span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transition-transform duration-500 group-hover:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
+                theme === 'dark'
+                  ? 'bg-gradient-to-r from-rose-400/10 to-pink-400/10'
+                  : 'bg-gradient-to-r from-rose-300/10 to-pink-300/10'
+              }`}></div>
             </button>
           </div>
         </header>
 
-        {/* MAIN GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* ENHANCED MAIN GRID */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
 
-          {/* LEFT COLUMN */}
-          <div className="lg:col-span-2 -mt-2">
-            <div className="h-full flex flex-col">
-              <div className="flex-grow">
-                <WeatherAnalysisCard
-                  temperature={weatherData?.temperature || deviceData?.temperature || 51}
-                  humidity={weatherData?.humidity || deviceData?.humidity || 0}
-                  uvIndex={weatherData?.uvIndex || deviceData?.uvIndex || 7}
-                  windSpeed={weatherData?.windSpeed || deviceData?.windSpeed || 38}
-                  isLiveWeatherData={!!weatherData}
-                />
-              </div>
-              <div className="mt-4">
+          {/* MAIN CONTENT AREA */}
+          <div className="xl:col-span-3 space-y-6">
+            {/* Weather Analysis Card - Full Width */}
+            <div className={`backdrop-blur-sm rounded-3xl p-1 border transition-colors duration-300 ${
+              theme === 'dark'
+                ? 'bg-slate-900/20 border-slate-800/30'
+                : 'bg-white/60 border-slate-200/30'
+            }`}>
+              <WeatherAnalysisCard
+                temperature={weatherData?.temperature || deviceData?.temperature || 51}
+                humidity={weatherData?.humidity || deviceData?.humidity || 0}
+                uvIndex={weatherData?.uvIndex || deviceData?.uvIndex || 7}
+                windSpeed={weatherData?.windSpeed || deviceData?.windSpeed || 38}
+                isLiveWeatherData={!!weatherData}
+              />
+            </div>
+
+            {/* Bottom Row - Two Cards Side by Side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Cover Status Card */}
+              <div className={`backdrop-blur-sm rounded-3xl p-1 border transition-colors duration-300 ${
+                theme === 'dark'
+                  ? 'bg-slate-900/20 border-slate-800/30'
+                  : 'bg-white/60 border-slate-200/30'
+              }`}>
                 <CoverStatusCard
                   windSpeed={weatherData?.windSpeed || deviceData?.windSpeed || 38}
                   humidity={weatherData?.humidity || deviceData?.humidity || 0}
                   temperature={weatherData?.temperature || deviceData?.temperature || 51}
                 />
               </div>
+
+              {/* Rack Control Card */}
+              <div className={`backdrop-blur-sm rounded-3xl p-1 border transition-colors duration-300 ${
+                theme === 'dark'
+                  ? 'bg-slate-900/20 border-slate-800/30'
+                  : 'bg-white/60 border-slate-200/30'
+              }`}>
+                <RackControlCard
+                  onExtend={() => blynkService.controlRack("extend")}
+                  onRetract={() => blynkService.controlRack("retract")}
+                  position={deviceData?.rackPosition || "retracted"}
+                  autoMode={deviceData?.autoMode || false}
+                  onToggleAutoMode={(enabled) =>
+                    blynkService.toggleAutoMode(enabled)
+                  }
+                />
+              </div>
             </div>
           </div>
 
-          {/* RIGHT COLUMN */}
-          <div className="lg:col-span-1 space-y-6 -mt-6">
-            <StatusBanner
-              title="System Status"
-              message="Not Connected"
-              variant="warning"
-              isCharging={false}
-              isBlynkConnected={false}
-            />
+          {/* RIGHT SIDEBAR */}
+          <div className="xl:col-span-1 space-y-6">
+            {/* System Status */}
+            <div className={`backdrop-blur-sm rounded-3xl p-1 border transition-colors duration-300 ${
+              theme === 'dark'
+                ? 'bg-slate-900/20 border-slate-800/30'
+                : 'bg-white/60 border-slate-200/30'
+            }`}>
+              <StatusBanner
+                title="System Status"
+                message="Not Connected"
+                variant="warning"
+                isCharging={false}
+                isBlynkConnected={false}
+              />
+            </div>
 
-            <SolarPowerCard
-              batteryLevel={0}
-              isCharging={false}
-              currentOutput={0}
-              isConnected={false}
-            />
+            {/* Solar Power Card */}
+            <div className={`backdrop-blur-sm rounded-3xl p-1 border transition-colors duration-300 ${
+              theme === 'dark'
+                ? 'bg-slate-900/20 border-slate-800/30'
+                : 'bg-white/60 border-slate-200/30'
+            }`}>
+              <SolarPowerCard
+                batteryLevel={0}
+                isCharging={false}
+                currentOutput={0}
+                isConnected={false}
+              />
+            </div>
 
-            <RackControlCard
-              onExtend={() => blynkService.controlRack("extend")}
-              onRetract={() => blynkService.controlRack("retract")}
-              position={deviceData?.rackPosition || "retracted"}
-              autoMode={deviceData?.autoMode || false}
-              onToggleAutoMode={(enabled) =>
-                blynkService.toggleAutoMode(enabled)
-              }
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-6">
+            {/* Quick Actions Card */}
+            <div className={`p-6 backdrop-blur-sm rounded-3xl shadow-2xl border transition-colors duration-300 ${
+              theme === 'dark'
+                ? 'bg-slate-800/50 border-slate-700/50'
+                : 'bg-white/80 border-slate-300/50'
+            }`}>
+              <h3 className={`text-lg font-semibold mb-4 bg-gradient-to-r bg-clip-text ${
+                theme === 'dark'
+                  ? 'text-transparent from-purple-400 to-pink-400'
+                  : 'text-transparent from-purple-600 to-pink-600'
+              }`}>Quick Actions</h3>
+              <div className="space-y-3">
+                <button className={`w-full p-3 rounded-2xl border transition-all duration-300 text-sm font-medium ${
+                  theme === 'dark'
+                    ? 'bg-gradient-to-r from-blue-600/30 to-blue-500/20 hover:from-blue-600/40 hover:to-blue-500/30 text-white border-blue-500/30'
+                    : 'bg-gradient-to-r from-blue-500/30 to-blue-400/20 hover:from-blue-500/40 hover:to-blue-400/30 text-slate-800 border-blue-400/30'
+                }`}>
+                  Refresh Weather Data
+                </button>
+                <button className={`w-full p-3 rounded-2xl border transition-all duration-300 text-sm font-medium ${
+                  theme === 'dark'
+                    ? 'bg-gradient-to-r from-green-600/30 to-green-500/20 hover:from-green-600/40 hover:to-green-500/30 text-white border-green-500/30'
+                    : 'bg-gradient-to-r from-green-500/30 to-green-400/20 hover:from-green-500/40 hover:to-green-400/30 text-slate-800 border-green-400/30'
+                }`}>
+                  Test Connection
+                </button>
+                <button className={`w-full p-3 rounded-2xl border transition-all duration-300 text-sm font-medium ${
+                  theme === 'dark'
+                    ? 'bg-gradient-to-r from-amber-600/30 to-amber-500/20 hover:from-amber-600/40 hover:to-amber-500/30 text-white border-amber-500/30'
+                    : 'bg-gradient-to-r from-amber-500/30 to-amber-400/20 hover:from-amber-500/40 hover:to-amber-400/30 text-slate-800 border-amber-400/30'
+                }`}>
+                  View Logs
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

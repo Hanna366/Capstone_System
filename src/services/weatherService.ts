@@ -52,24 +52,25 @@ class WeatherService {
     }
   }
 
-  public async getCurrentWeather(city: string = 'Manila,PH'): Promise<WeatherData | null> {
-    console.log('Fetching weather data for:', city);
-    console.log('API Key available:', !!this.apiKey);
+  public async getCurrentWeather(city: string = 'Malaybalay City, PH'): Promise<WeatherData | null> {
+    console.log('🌤 Fetching weather data for:', city);
+    console.log('🔑 API Key available:', !!this.apiKey);
     
     if (!this.apiKey) {
-      console.warn('Weather API key not found. Using mock data.');
+      console.warn('⚠️ Weather API key not found. Using mock data.');
       return this.getMockWeatherData();
     }
 
     try {
-      const url = `${this.baseUrl}?q=${encodeURIComponent(city)}&appid=${this.apiKey}&units=metric`;
-      console.log('Fetching from URL:', url.replace(this.apiKey, '[API_KEY_HIDDEN]'));
+      // Enhanced API request with more parameters for accuracy
+      const url = `${this.baseUrl}?q=${encodeURIComponent(city)}&appid=${this.apiKey}&units=metric&lat=8.4833&lon=124.6409`;
+      console.log('🌐 Fetching from URL:', url.replace(this.apiKey, '[API_KEY_HIDDEN]'));
       
       const response = await fetch(url);
-      console.log('Response status:', response.status);
+      console.log('📡 Response status:', response.status);
 
       if (response.status === 401) {
-        console.warn('Weather API key is invalid or unauthorized. Falling back to mock data.');
+        console.warn('❌ Weather API key is invalid or unauthorized. Falling back to mock data.');
         return this.getMockWeatherData();
       }
 
@@ -78,39 +79,47 @@ class WeatherService {
       }
 
       const data = await response.json();
-      console.log('API Response:', data);
+      console.log('📊 Full API Response:', data);
 
-      // Convert OpenWeatherMap data to our format
+      // Enhanced weather data processing for better accuracy
       const weatherData: WeatherData = {
-        temperature: Math.round(data.main.temp),
-        humidity: data.main.humidity,
-        uvIndex: this.estimateUVIndex(data.main.temp, data.weather[0].main), // Estimate UV index
-        windSpeed: Math.round(data.wind.speed * 3.6), // Convert m/s to km/h
-        location: data.name,
+        temperature: Math.round(data.main.temp * 10) / 10, // More precise temperature
+        humidity: Math.round(data.main.humidity),
+        uvIndex: this.estimateUVIndex(data.main.temp, data.weather[0].main, data.clouds?.all || 0),
+        windSpeed: Math.round(data.wind.speed * 3.6 * 10) / 10, // More precise wind speed
+        location: data.name || 'Malaybalay City',
         description: data.weather[0].description
       };
 
-      console.log('Processed weather data:', weatherData);
+      console.log('✅ Processed weather data:', weatherData);
 
-      // Send notification about weather update
+      // Enhanced notification with more details
       notificationService.notify(
         'system_status',
         'Weather Data Updated',
-        `Current weather in ${weatherData.location}: ${weatherData.temperature}°C, ${weatherData.humidity}% humidity`,
+        `Live weather in ${weatherData.location}: ${weatherData.temperature}°C, ${weatherData.humidity}% humidity, ${weatherData.windSpeed} km/h wind`,
         'info',
-        { weatherData }
+        { 
+          weatherData,
+          timestamp: new Date().toISOString(),
+          source: 'OpenWeatherMap API'
+        }
       );
 
       return weatherData;
     } catch (error) {
-      console.error('Error fetching weather data:', error);
+      console.error('❌ Error fetching weather data:', error);
       
-      // Send notification about error
+      // Enhanced error notification
       notificationService.notify(
         'system_status',
         'Weather Data Fetch Failed',
         'Could not retrieve current weather data. Using simulated values.',
-        'warning'
+        'warning',
+        { 
+          error: error instanceof Error ? error.message : 'Unknown error',
+          timestamp: new Date().toISOString()
+        }
       );
 
       // Return mock data as fallback
@@ -147,10 +156,10 @@ class WeatherService {
 
       // Convert OpenWeatherMap data to our format
       const weatherData: WeatherData = {
-        temperature: Math.round(data.main.temp),
-        humidity: data.main.humidity,
-        uvIndex: this.estimateUVIndex(data.main.temp, data.weather[0].main), // Estimate UV index
-        windSpeed: Math.round(data.wind.speed * 3.6), // Convert m/s to km/h
+        temperature: Math.round(data.main.temp * 10) / 10, // More precise temperature
+        humidity: Math.round(data.main.humidity),
+        uvIndex: this.estimateUVIndex(data.main.temp, data.weather[0].main, data.clouds?.all || 0),
+        windSpeed: Math.round(data.wind.speed * 3.6 * 10) / 10, // More precise wind speed
         location: data.name,
         description: data.weather[0].description
       };
@@ -184,7 +193,7 @@ class WeatherService {
   }
 
   // Estimate UV index based on temperature, weather conditions, and time of day
-  private estimateUVIndex(temperature: number, weatherMain: string): number {
+  private estimateUVIndex(temperature: number, weatherMain: string, clouds: number = 0): number {
     // More accurate UV estimation based on multiple factors
     const hour = new Date().getHours();
     const isDaytime = hour >= 6 && hour <= 18;

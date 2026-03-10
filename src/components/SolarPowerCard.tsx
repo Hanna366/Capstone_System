@@ -10,20 +10,32 @@ interface SolarPowerCardProps {
 }
 
 export const SolarPowerCard = ({ batteryLevel = 0, isCharging = false, currentOutput = 0, isConnected = false }: SolarPowerCardProps) => {
+  // Get current theme
+  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const isDark = theme === 'dark';
+
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (batteryLevel / 100) * circumference;
 
   return (
-    <Card className={`p-6 backdrop-blur-sm rounded-3xl shadow-2xl border transition-all duration-300 hover:scale-[1.02] ${
-      isConnected 
-        ? 'bg-slate-800/50 border-slate-700/50 hover:border-orange-500/30 hover:shadow-orange-500/20'
-        : 'bg-red-900/30 border-red-800/50 hover:border-red-700/30 hover:shadow-red-500/20'
+    <Card className={`p-6 backdrop-blur-sm rounded-3xl shadow-2xl border hover:scale-[1.02] transition-all duration-300 ${
+      isDark 
+        ? (isConnected 
+            ? 'bg-slate-800/50 border-slate-700/50 hover:border-orange-500/30 hover:shadow-orange-500/20'
+            : 'bg-red-900/30 border-red-800/50 hover:border-red-700/30 hover:shadow-red-500/20')
+        : (isConnected 
+            ? 'bg-white/80 border-slate-200/50 hover:border-orange-400/30 hover:shadow-orange-400/20'
+            : 'bg-red-100/50 border-red-300/50 hover:border-red-400/30 hover:shadow-red-400/20')
     }`}>
-      <h2 className={`text-2xl font-semibold mb-5 bg-clip-text text-transparent ${
-        isConnected
-          ? 'bg-gradient-to-r from-orange-400 to-amber-400'
-          : 'bg-gradient-to-r from-red-400 to-rose-400'
+      <h2 className={`text-2xl font-semibold mb-5 bg-clip-text ${
+        isDark 
+          ? (isConnected 
+              ? 'text-transparent bg-gradient-to-r from-orange-400 to-amber-400'
+              : 'text-transparent bg-gradient-to-r from-red-400 to-rose-400')
+          : (isConnected 
+              ? 'text-transparent bg-gradient-to-r from-orange-600 to-amber-600'
+              : 'text-transparent bg-gradient-to-r from-red-600 to-rose-600')
       }`}>Solar Power</h2>
 
       <div className="space-y-5">
@@ -37,7 +49,7 @@ export const SolarPowerCard = ({ batteryLevel = 0, isCharging = false, currentOu
                 cx="56"
                 cy="56"
                 r={radius}
-                stroke="#334155"
+                stroke={isDark ? '#334155' : '#e5e7eb'}
                 strokeWidth="8"
                 fill="none"
               />
@@ -46,7 +58,7 @@ export const SolarPowerCard = ({ batteryLevel = 0, isCharging = false, currentOu
                 cx="56"
                 cy="56"
                 r={radius}
-                stroke="#f97316"
+                stroke={isDark ? '#f97316' : '#f59e0b'}
                 strokeWidth="8"
                 fill="none"
                 strokeDasharray={circumference}
@@ -57,23 +69,31 @@ export const SolarPowerCard = ({ batteryLevel = 0, isCharging = false, currentOu
             </svg>
             {/* Center Text */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">{batteryLevel}%</span>
+              <span className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{batteryLevel}%</span>
             </div>
           </div>
 
           {/* Output Info */}
           <div className="text-right">
-            <div className="text-3xl font-bold text-white">{currentOutput.toFixed(2)}W</div>
-            <div className="text-sm text-gray-400">Output</div>
+            <div className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-slate-800'}`}>{currentOutput.toFixed(2)}W</div>
+            <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>Output</div>
           </div>
         </div>
 
         {/* Simple Chart Representation */}
-        <div className="h-16 bg-slate-700/30 rounded-xl p-2 flex items-end gap-1 border border-slate-700/50">
+        <div className={`h-16 rounded-xl p-2 flex items-end gap-1 border transition-colors duration-300 ${
+          isDark 
+            ? 'bg-slate-700/30 border-slate-700/50'
+            : 'bg-slate-100/30 border-slate-200/50'
+        }`}>
           {[0.3, 0.5, 0.4, 0.6, 0.7, 0.5, 0.8, 0.9, 0.7, 0.6, 0.8, 0.85].map((height, index) => (
             <div
               key={index}
-              className="flex-1 bg-gradient-to-t from-orange-600 to-orange-400 rounded-sm transition-all"
+              className={`flex-1 rounded-sm transition-all ${
+                isDark 
+                  ? 'bg-gradient-to-t from-orange-600 to-orange-400'
+                  : 'bg-gradient-to-t from-orange-500 to-orange-300'
+              }`}
               style={{ height: `${height * 100}%` }}
             />
           ))}

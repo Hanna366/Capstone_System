@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Cloud, Sun, Moon } from "lucide-react";
+import { Cloud, Sun, Moon, Clock, Settings } from "lucide-react";
 import { StatusBanner } from "@/components/StatusBanner";
 import { SolarPowerCard } from "@/components/SolarPowerCard";
 import { WeatherCard } from "@/components/WeatherCard";
@@ -18,15 +18,64 @@ import { toast } from "sonner";
 
 const Index = () => {
   const [deviceData, setDeviceData] = useState<DeviceData | null>(null);
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+  const [themeMode, setThemeMode] = useState<'manual' | 'auto'>(() => localStorage.getItem('themeMode') as 'manual' | 'auto' || 'manual');
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    const savedMode = localStorage.getItem('themeMode') || 'manual';
+    
+    // If auto mode, calculate time-based theme
+    if (savedMode === 'auto') {
+      return getTimeBasedTheme();
+    }
+    
+    return savedTheme;
+  });
+
+  // Function to determine time-based theme
+  const getTimeBasedTheme = (): 'light' | 'dark' => {
+    const hour = new Date().getHours();
+    // Daytime: 6 AM - 6 PM
+    return (hour >= 6 && hour < 18) ? 'light' : 'dark';
+  };
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
-  }, [theme]);
+    localStorage.setItem('themeMode', themeMode);
+  }, [theme, themeMode]);
+
+  // Auto theme switching based on time
+  useEffect(() => {
+    if (themeMode === 'auto') {
+      const checkTimeBasedTheme = () => {
+        const timeBasedTheme = getTimeBasedTheme();
+        if (timeBasedTheme !== theme) {
+          setTheme(timeBasedTheme);
+        }
+      };
+
+      // Check immediately
+      checkTimeBasedTheme();
+
+      // Check every minute
+      const interval = setInterval(checkTimeBasedTheme, 60000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [themeMode, theme]);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
+  const toggleThemeMode = () => {
+    const newMode = themeMode === 'manual' ? 'auto' : 'manual';
+    setThemeMode(newMode);
+    
+    // If switching to auto, immediately apply time-based theme
+    if (newMode === 'auto') {
+      setTheme(getTimeBasedTheme());
+    }
   };
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
@@ -257,27 +306,79 @@ const Index = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border backdrop-blur-sm transition-all duration-300 group shadow-lg ${
+            {/* Enhanced Theme Toggle with Manual/Auto Mode */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleTheme}
+                disabled={themeMode === 'auto'}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border backdrop-blur-sm transition-all duration-300 group shadow-lg ${
+                  theme === 'dark'
+                    ? 'border-slate-700/50 bg-slate-800/60 hover:bg-slate-700/60'
+                    : 'border-slate-300/50 bg-slate-100/60 hover:bg-slate-200/60'
+                } ${
+                  themeMode === 'auto' ? 'opacity-60 cursor-not-allowed' : ''
+                }`}
+                aria-label="Toggle theme"
+              >
+                {theme === 'dark' ? (
+                  <Moon className="h-5 w-5 text-blue-400 transition-transform duration-300 group-hover:rotate-12" />
+                ) : (
+                  <Sun className="h-5 w-5 text-amber-500 transition-transform duration-300 group-hover:rotate-45" />
+                )}
+                <span className={`text-sm font-medium ${
+                  theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+                }`}>
+                  {theme === 'dark' ? 'Dark' : 'Light'}
+                </span>
+              </button>
+
+              {/* Auto/Manual Mode Toggle */}
+              <button
+                onClick={toggleThemeMode}
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-2xl border backdrop-blur-sm transition-all duration-300 group shadow-lg ${
+                  themeMode === 'auto'
+                    ? theme === 'dark'
+                      ? 'border-blue-500/50 bg-blue-600/30 text-blue-400'
+                      : 'border-blue-400/50 bg-blue-100/60 text-blue-600'
+                    : theme === 'dark'
+                      ? 'border-slate-700/50 bg-slate-800/60 hover:bg-slate-700/60 text-slate-300'
+                      : 'border-slate-300/50 bg-slate-100/60 hover:bg-slate-200/60 text-slate-700'
+                }`}
+                aria-label="Toggle theme mode"
+              >
+                {themeMode === 'auto' ? (
+                  <>
+                    <Clock className="h-4 w-4" />
+                    <span className="text-sm font-medium">Auto</span>
+                  </>
+                ) : (
+                  <>
+                    <Settings className="h-4 w-4" />
+                    <span className="text-sm font-medium">Manual</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Time Display in Auto Mode */}
+            {themeMode === 'auto' && (
+              <div className={`text-sm px-3 py-1.5 rounded-xl backdrop-blur-sm ${
                 theme === 'dark'
-                  ? 'border-slate-700/50 bg-slate-800/60 hover:bg-slate-700/60'
-                  : 'border-slate-300/50 bg-slate-100/60 hover:bg-slate-200/60'
-              }`}
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? (
-                <Moon className="h-5 w-5 text-blue-400 transition-transform duration-300 group-hover:rotate-12" />
-              ) : (
-                <Sun className="h-5 w-5 text-amber-500 transition-transform duration-300 group-hover:rotate-45" />
-              )}
-              <span className={`text-sm font-medium ${
-                theme === 'dark' ? 'text-slate-300' : 'text-slate-700'
+                  ? 'bg-slate-800/60 text-slate-400 border border-slate-700/50'
+                  : 'bg-slate-100/60 text-slate-600 border border-slate-300/50'
               }`}>
-                {theme === 'dark' ? 'Dark' : 'Light'}
-              </span>
-            </button>
+                <span className="font-medium">
+                  {new Date().toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true 
+                  })}
+                </span>
+                <span className="ml-1 text-xs opacity-75">
+                  {getTimeBasedTheme() === 'light' ? '☀️' : '🌙'}
+                </span>
+              </div>
+            )}
 
             {/* User Section */}
             <div className="hidden md:flex items-center gap-4 mr-2">

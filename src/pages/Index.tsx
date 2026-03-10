@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Cloud } from "lucide-react";
+import { Cloud, Sun, Moon } from "lucide-react";
 import { StatusBanner } from "@/components/StatusBanner";
 import { SolarPowerCard } from "@/components/SolarPowerCard";
 import { WeatherCard } from "@/components/WeatherCard";
@@ -18,6 +18,16 @@ import { toast } from "sonner";
 
 const Index = () => {
   const [deviceData, setDeviceData] = useState<DeviceData | null>(null);
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
   const [weatherError, setWeatherError] = useState<string | null>(null);
@@ -198,8 +208,22 @@ const Index = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-orange-400/30 to-blue-400/30 rounded-full opacity-80"></div>
             </div>
             <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-300 to-blue-500 pb-4 animate-fade-in">
-              Smart Drying Rack
+              Smart Drying
             </h1>
+            <button
+              onClick={toggleTheme}
+              className="ml-2 mb-3 flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-600/50 bg-slate-800/60 hover:bg-slate-700/60 backdrop-blur-sm transition-all duration-300 group"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? (
+                <Moon className="h-4 w-4 text-blue-400 transition-transform duration-300 group-hover:rotate-12" />
+              ) : (
+                <Sun className="h-4 w-4 text-amber-400 transition-transform duration-300 group-hover:rotate-45" />
+              )}
+              <span className="text-sm text-slate-300 font-medium">
+                {theme === 'dark' ? 'Dark' : 'Light'}
+              </span>
+            </button>
           </div>
           <div className="flex items-center gap-3">
             {/* User Info and Admin Button */}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService, type User, type PendingUser } from '@/services/authService';
 import { blynkService } from '@/services/blynkService';
+import { Switch } from '@/components/ui/switch';
 
 interface Device {
   id: string;
@@ -20,6 +21,7 @@ export const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'users' | 'pending' | 'devices'>('users');
   const [error, setError] = useState<string | null>(null);
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
 
   // Check if user has admin privileges
   useEffect(() => {
@@ -104,6 +106,15 @@ export const AdminDashboard = () => {
       setError('Failed to reject user');
     }
   };
+
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === 'dark' ? 'light' : 'dark'));
+  };
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   if (!authService.hasRole('admin')) {
     return (

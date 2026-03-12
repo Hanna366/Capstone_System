@@ -16,6 +16,7 @@ export interface DeviceData {
   autoMode: boolean;
   connected: boolean;
   lastUpdate: Date;
+  rainDetected: boolean;
 }
 
 // Mock initial data - in a real application, this would come from Blynk API
@@ -31,6 +32,7 @@ const MOCK_DEVICE_DATA: DeviceData = {
   autoMode: true,
   connected: true,
   lastUpdate: new Date(),
+  rainDetected: false,
 };
 
 class BlynkService {
@@ -93,7 +95,7 @@ class BlynkService {
     
     this.pollingInterval = setInterval(async () => {
       try {
-        const newData = await this.fetchDeviceData();
+        const newData = await this.fetchDeviceData('sensor'); // Added the required 'source' argument
         this.updateDeviceData(newData);
       } catch (error) {
         console.error('Error fetching device data:', error);
@@ -114,105 +116,48 @@ class BlynkService {
     }
   }
 
-  private async fetchDeviceData(): Promise<DeviceData> {
-    // Fetch real weather data from weather service
-    const weatherData = await weatherService.getCurrentWeather('Manila,PH');
-    
-    // Simulate fetching data from Blynk cloud
-    // In a real app, this would make an API call to Blynk
-    return new Promise(resolve => {
-      setTimeout(() => {
-        // Simulate slight variations in sensor readings
-        const variation = (base: number, maxVariation: number = 5) => {
-          const variationAmount = (Math.random() * 2 - 1) * maxVariation;
-          return Math.max(0, Math.min(100, base + variationAmount));
-        };
+  public async fetchDeviceData(source: 'sensor' | 'api'): Promise<DeviceData> {
+    const isRainSensorConnected = await this.isRainSensorConnected();
 
-        // Use real weather data if available, otherwise use simulated data
-        const temperature = weatherData ? weatherData.temperature : Math.round(variation(this.deviceData.temperature, 3));
-        const humidity = weatherData ? weatherData.humidity : Math.round(variation(this.deviceData.humidity, 5));
-        const uvIndex = weatherData ? weatherData.uvIndex : Math.max(0, Math.min(11, Math.round(variation(this.deviceData.uvIndex, 2))));
-        const windSpeed = weatherData ? weatherData.windSpeed : Math.max(0, Math.round(variation(this.deviceData.windSpeed, 3)));
+    if (isRainSensorConnected) {
+      const isRaining = await this.getRainSensorStatus();
 
-        // Simulate small changes in other readings
-        const newData: DeviceData = {
-          ...this.deviceData,
-          batteryLevel: Math.round(variation(this.deviceData.batteryLevel, 2)),
-          currentOutput: parseFloat((this.deviceData.currentOutput + (Math.random() * 10 - 5)).toFixed(2)),
-          temperature: temperature,
-          humidity: humidity,
-          uvIndex: uvIndex,
-          windSpeed: windSpeed,
-          connected: true,
-          lastUpdate: new Date(),
-        };
+      const updatedData: DeviceData = {
+        ...this.deviceData,
+        rackPosition: isRaining ? 'retracted' : this.deviceData.rackPosition,
+        rainDetected: isRaining,
+        lastUpdate: new Date(),
+      };
 
-        // Check for weather-triggered rack movements
-        // If high wind or high humidity and rack is extended, auto-retract
-        if ((newData.windSpeed > 20 || newData.humidity > 75) && this.deviceData.rackPosition === 'extended') {
-          // Auto-retract due to weather conditions
-          const updatedData = {
-            ...newData,
-            rackPosition: 'retracted',
-            lastUpdate: new Date(),
-          };
-          
-          // Notify about weather-triggered movement
-          notificationService.notifyMovement('retracted', 'weather_condition');
-          
-          // Also notify as a transaction
-          notificationService.notifyTransaction(
-            'auto_retract', 
-            `Rack automatically retracted due to weather conditions (wind: ${newData.windSpeed}km/h, humidity: ${newData.humidity}%)`, 
-            'warning'
-          );
-          
-          return updatedData;
-        }
-        
-        // Handle dual-cover system
-        // If windy and humid, engage solid cover
-        if (newData.windSpeed > 15 && newData.humidity > 60) {
-          notificationService.notifyHardwareControl(
-            'cover_switch',
-            `Solid cover engaged for windy and humid conditions (wind: ${newData.windSpeed}km/h, humidity: ${newData.humidity}%)`,
-            'info'
-          );
-        } 
-        // If windy but not humid, engage perforated cover
-        else if (newData.windSpeed > 15 && newData.humidity <= 60) {
-          notificationService.notifyHardwareControl(
-            'cover_switch',
-            `Perforated cover engaged for windy and dry conditions (wind: ${newData.windSpeed}km/h, humidity: ${newData.humidity}%)`,
-            'info'
-          );
-        }
-        
-        // If low humidity and good conditions and rack is retracted, suggest extending
-        if (newData.humidity < 40 && newData.windSpeed < 15 && newData.temperature > 20 && this.deviceData.rackPosition === 'retracted' && this.deviceData.autoMode) {
-          // Auto-extend due to favorable conditions
-          const updatedData = {
-            ...newData,
-            rackPosition: 'extended',
-            lastUpdate: new Date(),
-          };
-          
-          // Notify about weather-triggered movement
-          notificationService.notifyMovement('extended', 'weather_condition');
-          
-          // Also notify as a transaction
-          notificationService.notifyTransaction(
-            'auto_extend', 
-            `Rack automatically extended due to favorable conditions (temp: ${newData.temperature}°C, humidity: ${newData.humidity}%)`, 
-            'info'
-          );
-          
-          return updatedData;
-        }
+      if (isRaining) {
+        notificationService.notifyMovement('retracted', 'auto');
+        notificationService.notifyTransaction(
+          'auto_retract',
+          `Rack automatically retracted due to rain detected by the rain sensor`,
+          'warning'
+        );
+      }
 
-        resolve(newData);
-      }, 200);
-    });
+      this.updateDeviceData(updatedData);
+      return updatedData;
+    } else {
+      console.warn("Rain sensor not connected. Using weather API as backup.");
+      const weatherData = await weatherService.getCurrentWeather('Manila,PH');
+
+      const newData: DeviceData = {
+        ...this.deviceData,
+        temperature: weatherData.temperature,
+        humidity: weatherData.humidity,
+        uvIndex: weatherData.uvIndex,
+        windSpeed: weatherData.windSpeed,
+        rainDetected: weatherData.humidity > 80, // Assume rain if humidity is high
+        connected: true,
+        lastUpdate: new Date(),
+      };
+
+      this.updateDeviceData(newData);
+      return newData;
+    }
   }
 
   private updateDeviceData(newData: DeviceData): void {
@@ -355,6 +300,59 @@ class BlynkService {
     }
   }
 
+  public async toggleRackAutoMode(enabled: boolean): Promise<boolean> {
+    try {
+      // Simulate sending command to IoT device via Blynk
+      const response = await new Promise<{ success: boolean }>((resolve) => {
+        setTimeout(() => {
+          this.updateDeviceData({
+            ...this.deviceData,
+            autoMode: enabled,
+            lastUpdate: new Date(),
+          });
+
+          resolve({ success: true });
+        }, 500);
+      });
+
+      if (response.success) {
+        // Notify about the auto mode change
+        notificationService.notify(
+          'system_status', 
+          `Rack Auto mode ${enabled ? 'enabled' : 'disabled'}`, 
+          `Automatic rack control has been ${enabled ? 'enabled' : 'disabled'}`, 
+          enabled ? 'info' : 'warning'
+        );
+
+        notificationService.notifyTransaction(
+          'rack_auto_mode_toggle', 
+          `Rack Auto mode ${enabled ? 'enabled' : 'disabled'}`, 
+          enabled ? 'info' : 'warning'
+        );
+
+        return true;
+      } else {
+        throw new Error('Failed to toggle rack auto mode');
+      }
+    } catch (error) {
+      console.error('Error toggling rack auto mode:', error);
+      notificationService.notify(
+        'system_status', 
+        `Failed to ${enabled ? 'enable' : 'disable'} rack auto mode`, 
+        `An error occurred while changing rack auto mode status`, 
+        'error'
+      );
+
+      notificationService.notifyTransaction(
+        'rack_auto_mode_toggle_failed', 
+        `Failed to ${enabled ? 'enable' : 'disable'} rack auto mode`, 
+        'error'
+      );
+
+      return false;
+    }
+  }
+
   public disconnect(): void {
     this.stopPolling();
     this.apiKey = null;
@@ -363,6 +361,37 @@ class BlynkService {
       connected: false,
     };
     notificationService.notifyConnectionStatus(false, "Disconnected from Blynk IoT Platform");
+  }
+
+  // Check if the rain sensor is connected
+  public async isRainSensorConnected(): Promise<boolean> {
+    try {
+      const response = await fetch("/api/rain-sensor/status"); // Replace with actual endpoint
+      const data = await response.json();
+      return data.connected;
+    } catch (error) {
+      console.error("Error checking rain sensor connection:", error);
+      return false;
+    }
+  }
+
+  // Get the rain sensor status
+  public async getRainSensorStatus(): Promise<boolean> {
+    try {
+      const response = await fetch("/api/rain-sensor/rain-status"); // Replace with actual endpoint
+
+      // Check if the response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Invalid response format: Expected JSON");
+      }
+
+      const data = await response.json();
+      return data.isRaining;
+    } catch (error) {
+      console.error("Error retrieving rain sensor status:", error);
+      return false;
+    }
   }
 }
 

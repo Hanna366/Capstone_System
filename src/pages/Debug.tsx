@@ -33,10 +33,11 @@ export const DebugPage = () => {
 
   const handleTestLogin = () => {
     const testUser = {
-      id: 'test_user_123',
-      username: 'testuser',
-      name: 'Test User',
-      role: 'user'
+      id: "test_user_123",
+      username: "testuser",
+      name: "Test User",
+      role: "user" as "user", // Explicitly cast the role to match the type
+      password: "password123" // Added missing password property
     };
     
     authService.setCurrentUser(testUser);

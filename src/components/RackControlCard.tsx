@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { notificationService } from "@/services/notificationService";
+import { useTheme } from "@/context/ThemeProvider";
 
 interface RackControlCardProps {
   onExtend: () => void;
@@ -14,16 +15,15 @@ interface RackControlCardProps {
 }
 
 export const RackControlCard = ({ onExtend, onRetract, position: propPosition, autoMode: propAutoMode, onToggleAutoMode }: RackControlCardProps) => {
-  // Get current theme
-  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-  const isDark = theme === 'dark';
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
-  const [localAutoMode, setLocalAutoMode] = useState(true);
   const [localPosition, setLocalPosition] = useState<"extended" | "retracted">("extended");
+  const [rackAutoMode, setRackAutoMode] = useState(false); // Independent auto mode for rack control
 
   // Use props if provided, otherwise fall back to local state
   const effectivePosition = propPosition ?? localPosition;
-  const effectiveAutoMode = propAutoMode ?? localAutoMode;
+  const effectiveAutoMode = propAutoMode ?? true;
 
   const handleExtend = async () => {
     if (onExtend) {
@@ -45,11 +45,12 @@ export const RackControlCard = ({ onExtend, onRetract, position: propPosition, a
     notificationService.notifyMovement('retracted', 'manual');
   };
 
-  const handleToggleAutoMode = (enabled: boolean) => {
+  const handleToggleAutoMode = async (enabled: boolean) => {
+    console.log("Toggling auto mode to:", enabled); // Debugging log
+    setRackAutoMode(enabled);
     if (onToggleAutoMode) {
-      onToggleAutoMode(enabled);
+      await onToggleAutoMode(enabled);
     }
-    setLocalAutoMode(enabled);
   };
 
   return (
@@ -92,7 +93,7 @@ export const RackControlCard = ({ onExtend, onRetract, position: propPosition, a
         <div className="space-y-3">
           <Button
             onClick={handleExtend}
-            disabled={effectivePosition === "extended" || effectiveAutoMode}
+            disabled={effectivePosition === "extended"} // Allow pressing the button regardless of auto mode
             className={`w-full h-14 font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed rounded-2xl uppercase shadow-lg hover:scale-105 relative overflow-hidden group transition-all duration-300 ${
               isDark 
                 ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white border-orange-500/30 hover:shadow-orange-500/30'
@@ -104,8 +105,7 @@ export const RackControlCard = ({ onExtend, onRetract, position: propPosition, a
           </Button>
           <Button
             onClick={handleRetract}
-            disabled={effectivePosition === "retracted" || effectiveAutoMode}
-            variant="secondary"
+            disabled={false} // Allow pressing the button at all times
             className={`w-full h-14 font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed relative rounded-2xl uppercase border shadow-lg hover:scale-105 group transition-all duration-300 ${
               isDark 
                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-blue-500/30 hover:shadow-blue-500/30'
@@ -114,9 +114,6 @@ export const RackControlCard = ({ onExtend, onRetract, position: propPosition, a
           >
             <span className="relative z-10 flex items-center gap-2">
               RETRACT
-              {(effectivePosition === "retracted" || effectiveAutoMode) && (
-                <Lock className="h-4 w-4" />
-              )}
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </Button>

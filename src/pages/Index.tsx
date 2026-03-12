@@ -15,6 +15,7 @@ import { blynkService, type DeviceData } from "@/services/blynkService";
 import { authService } from "@/services/authService";
 import { weatherService, type WeatherData } from "@/services/weatherService";
 import { toast } from "sonner";
+import { ThemeProvider } from "@/context/ThemeProvider";
 
 // Function to determine time-based theme
 const getTimeBasedTheme = (): 'light' | 'dark' => {
@@ -42,22 +43,32 @@ const Index = () => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
     localStorage.setItem('themeMode', themeMode);
-  }, [themeMode]);
+  }, [theme, themeMode]); // Ensure theme and themeMode changes are applied immediately
 
   // Auto theme switching based on time
   useEffect(() => {
     if (themeMode === 'auto') {
       const updateTheme = () => {
         const newTheme = getTimeBasedTheme();
-        setTheme(newTheme); // Always update theme to ensure it reflects changes
+        setTheme(newTheme); // Update theme immediately
+        document.documentElement.setAttribute('data-theme', newTheme); // Apply theme immediately
       };
 
       updateTheme(); // Ensure the theme is updated immediately on mount
-      const interval = setInterval(updateTheme, 60000); // Check every minute
+      const now = new Date();
+      const timeToNextMinute = (60 - now.getSeconds()) * 1000;
 
-      return () => clearInterval(interval); // Cleanup on unmount
+      const timeout = setTimeout(() => {
+        updateTheme();
+
+        const interval = setInterval(updateTheme, 60000); // Check every minute
+
+        return () => clearInterval(interval); // Cleanup on unmount
+      }, timeToNextMinute);
+
+      return () => clearTimeout(timeout); // Cleanup on unmount
     }
-  }, [themeMode]); // Removed `theme` from dependency array to avoid redundant updates
+  }, [themeMode]); // Ensure auto mode works correctly
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
@@ -85,153 +96,128 @@ const Index = () => {
   
   const currentUser = authService.getCurrentUser();
 
-  // Fetch weather data on component mount
+  // Rain sensor connection status
+  const [isRainSensorConnected, setIsRainSensorConnected] = useState(false);
+  const [rainDetected, setRainDetected] = useState(false); // Define rainDetected state
+
+  // Check rain sensor connection status and update rainDetected
+  useEffect(() => {
+    const checkRainSensorConnection = async () => {
+      try {
+        const isConnected = await blynkService.isRainSensorConnected();
+        setIsRainSensorConnected(isConnected);
+
+        if (isConnected) {
+          const rainStatus = await blynkService.getRainSensorStatus();
+          setRainDetected(rainStatus);
+        } else {
+          setRainDetected(false); // Default to no rain if sensor is disconnected
+        }
+      } catch (error) {
+        console.error("Error checking rain sensor connection:", error);
+        setIsRainSensorConnected(false);
+        setRainDetected(false);
+      }
+    };
+
+    checkRainSensorConnection();
+
+    const interval = setInterval(checkRainSensorConnection, 10000); // Check every 10 seconds
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
+
+  // Updated system decision logic based on rain sensor
+  useEffect(() => {
+    const handleSystemActions = () => {
+      if (isRainSensorConnected) {
+        if (rainDetected) {
+          console.log("Rain detected: Retracting rack cover.");
+          blynkService.controlRack("retract"); // Retract the rack cover immediately
+        } else {
+          console.log("No rain detected: Allowing normal drying operations.");
+          // Allow normal drying operations (rack remains extended)
+        }
+      } else {
+        console.warn("Rain sensor not connected: System operating without rain sensor.");
+      }
+    };
+
+    handleSystemActions(); // Check rain sensor status on mount
+
+    const rainSensorInterval = setInterval(handleSystemActions, 5000); // Check every 5 seconds
+
+    return () => clearInterval(rainSensorInterval); // Cleanup on unmount
+  }, [rainDetected, isRainSensorConnected]);
+
+  // Manual user control logic (if enabled)
+  const handleManualControl = (action: "extend" | "retract") => {
+    console.log(`Manual control: ${action} rack.`);
+    blynkService.controlRack(action);
+  };
+
+  // Fail-safe behavior for Weather API
+  useEffect(() => {
+    if (!weatherData) {
+      console.warn("Weather API disconnected. System operating with rain sensor only.");
+    }
+  }, [weatherData]);
+
+  const [rackAutoMode, setRackAutoMode] = useState(false); // Independent state for rack auto mode
+
+  const handleToggleRackAutoMode = async (enabled: boolean) => {
+    const success = await blynkService.toggleRackAutoMode(enabled);
+    if (success) {
+      setRackAutoMode(enabled); // Update independent rack auto mode state
+    } else {
+      toast.error("Failed to toggle rack auto mode.");
+    }
+  };
+
+  const [dataSource, setDataSource] = useState<'sensor' | 'api'>('sensor');
+
+  const handleDataSourceChange = (newSource: 'sensor' | 'api') => {
+    setDataSource(newSource);
+  };
+
+  const weatherDataToDisplay = isRainSensorConnected && dataSource === 'sensor'
+    ? {
+        temperature: deviceData?.temperature ?? null,
+        humidity: deviceData?.humidity ?? null,
+        uvIndex: deviceData?.uvIndex ?? null,
+        windSpeed: deviceData?.windSpeed ?? null,
+        rainDetected: rainDetected,
+      }
+    : dataSource === 'api'
+    ? weatherData || {
+        temperature: weatherData?.temperature ?? null,
+        humidity: weatherData?.humidity ?? null,
+        uvIndex: weatherData?.uvIndex ?? null,
+        windSpeed: weatherData?.windSpeed ?? null,
+      }
+    : {
+        temperature: null,
+        humidity: null,
+        uvIndex: null,
+        windSpeed: null,
+      };
+
+  const isLiveWeatherData = true; // Defined the missing variable
+
   useEffect(() => {
     const fetchWeatherData = async () => {
       try {
-        setWeatherLoading(true);
-        setWeatherError(null);
-        
-        // First test the API key
-        const isApiKeyValid = await weatherService.testApiKey();
-        if (!isApiKeyValid) {
-          setWeatherError('Invalid API key. Please get a free key from OpenWeatherMap');
-          setWeatherLoading(false);
-          return;
-        }
-        
-        let weatherData;
-        
-        // Try to get user's location first
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            async (position) => {
-              console.log('Got user location:', position.coords.latitude, position.coords.longitude);
-              weatherData = await weatherService.getCurrentWeatherByLocation(
-                position.coords.latitude, 
-                position.coords.longitude
-              );
-              if (weatherData) {
-                setWeatherData(weatherData);
-                console.log('Weather data fetched by location:', weatherData);
-              }
-              setWeatherLoading(false);
-            },
-            async (error) => {
-              console.warn('Geolocation error:', error);
-              // Fallback to Manila if geolocation fails
-              weatherData = await weatherService.getCurrentWeather();
-              if (weatherData) {
-                setWeatherData(weatherData);
-                console.log('Weather data fetched by city:', weatherData);
-              }
-              setWeatherLoading(false);
-            }
-          );
-        } else {
-          // Fallback to city-based weather if geolocation not supported
-          weatherData = await weatherService.getCurrentWeather();
-          if (weatherData) {
-            setWeatherData(weatherData);
-            console.log('Weather data fetched by city:', weatherData);
-          }
-          setWeatherLoading(false);
-        }
+        const data = await weatherService.getCurrentWeather();
+        setWeatherData(data);
+        setWeatherLoading(false);
       } catch (error) {
-        console.error('Error fetching weather data:', error);
-        setWeatherError('Failed to fetch weather data');
+        console.error("Error fetching weather data:", error);
+        setWeatherError("Failed to fetch weather data.");
         setWeatherLoading(false);
       }
     };
 
     fetchWeatherData();
-    
-    // Refresh weather data every 5 minutes
-    const weatherInterval = setInterval(fetchWeatherData, 5 * 60 * 1000);
-    
-    return () => clearInterval(weatherInterval);
-  }, []);
-
-  useEffect(() => {
-    console.log('Index page loaded, checking for Google OAuth callback');
-    console.log('Current URL search params:', window.location.search);
-        
-    // Handle OAuth callback when Google redirects back to the root URL
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get('code');
-    const error = params.get('error');
-        
-    console.log('Code param:', code);
-    console.log('Error param:', error);
-    
-    if (error) {
-      console.error('Google OAuth error:', error);
-      toast.error(`Google login failed: ${error}`);
-      // Clean the URL to remove the error parameter
-      window.history.replaceState({}, document.title, window.location.pathname);
-      // Still navigate to login on error
-      navigate('/login');
-      return;
-    }
-    
-    if (code) {
-      // Process the Google OAuth callback
-      const processGoogleCallback = async () => {
-        try {
-          // Clean the URL to remove the code parameter
-          window.history.replaceState({}, document.title, window.location.pathname);
-          
-          console.log('Processing Google OAuth callback with code:', code);
-          
-          // Handle the Google callback using the auth service
-          const user = await authService.handleGoogleCallback(code);
-          
-          console.log('Google auth result:', user);
-          console.log('Current auth state after Google login:', {
-            isAuthenticated: authService.isAuthenticated(),
-            currentUser: authService.getCurrentUser(),
-            localStorageUser: localStorage.getItem('user_session')
-          });
-          
-          if (user) {
-            toast.success(`Welcome, ${user.name}! Signed in with Google.`);
-            // Force refresh auth state and navigate
-            authService.refreshAuthState();
-            console.log('Auth state after refresh:', {
-              isAuthenticated: authService.isAuthenticated(),
-              currentUser: authService.getCurrentUser()
-            });
-            // Navigate to dashboard
-            navigate('/', { replace: true });
-          } else {
-            toast.error('Failed to authenticate with Google');
-            navigate('/login');
-          }
-        } catch (err) {
-          console.error('Error handling Google callback:', err);
-          toast.error('An error occurred during Google authentication');
-          navigate('/login');
-        }
-      };
-      
-      processGoogleCallback();
-    }
-    
-    const initService = async () => {
-      const success = await blynkService.initialize("BLYNK_API_KEY_12345");
-      if (success) {
-        const unsubscribe = blynkService.subscribe(setDeviceData);
-        return () => {
-          unsubscribe();
-        };
-      }
-    };
-
-    initService();
-
-    return () => {
-      blynkService.disconnect();
-    };
   }, []);
 
   return (
@@ -455,11 +441,13 @@ const Index = () => {
                 : 'bg-white/60 border-slate-200/30'
             }`}>
               <WeatherAnalysisCard
-                temperature={weatherData?.temperature || deviceData?.temperature || 51}
-                humidity={weatherData?.humidity || deviceData?.humidity || 0}
-                uvIndex={weatherData?.uvIndex || deviceData?.uvIndex || 7}
-                windSpeed={weatherData?.windSpeed || deviceData?.windSpeed || 38}
-                isLiveWeatherData={!!weatherData}
+                temperature={typeof weatherData?.temperature === "number" ? weatherData.temperature : null}
+                humidity={typeof weatherData?.humidity === "number" ? weatherData.humidity : null}
+                uvIndex={typeof weatherData?.uvIndex === "number" ? weatherData.uvIndex : null}
+                windSpeed={typeof weatherData?.windSpeed === "number" ? weatherData.windSpeed : null}
+                isLiveWeatherData={isLiveWeatherData}
+                dataSource={dataSource}
+                onDataSourceChange={handleDataSourceChange}
               />
             </div>
 
@@ -488,10 +476,8 @@ const Index = () => {
                   onExtend={() => blynkService.controlRack("extend")}
                   onRetract={() => blynkService.controlRack("retract")}
                   position={deviceData?.rackPosition || "retracted"}
-                  autoMode={deviceData?.autoMode || false}
-                  onToggleAutoMode={(enabled) =>
-                    blynkService.toggleAutoMode(enabled)
-                  }
+                  autoMode={rackAutoMode} // Use independent rack auto mode
+                  onToggleAutoMode={handleToggleRackAutoMode}
                 />
               </div>
             </div>
@@ -527,42 +513,6 @@ const Index = () => {
                 isConnected={false}
               />
             </div>
-
-            {/* Quick Actions Card */}
-            <div className={`p-6 backdrop-blur-sm rounded-3xl shadow-2xl border transition-colors duration-300 ${
-              theme === 'dark'
-                ? 'bg-slate-800/50 border-slate-700/50'
-                : 'bg-white/80 border-slate-300/50'
-            }`}>
-              <h3 className={`text-lg font-semibold mb-4 bg-gradient-to-r bg-clip-text ${
-                theme === 'dark'
-                  ? 'text-transparent from-purple-400 to-pink-400'
-                  : 'text-transparent from-purple-600 to-pink-600'
-              }`}>Quick Actions</h3>
-              <div className="space-y-3">
-                <button className={`w-full p-3 rounded-2xl border transition-all duration-300 text-sm font-medium ${
-                  theme === 'dark'
-                    ? 'bg-gradient-to-r from-blue-600/30 to-blue-500/20 hover:from-blue-600/40 hover:to-blue-500/30 text-white border-blue-500/30'
-                    : 'bg-gradient-to-r from-blue-500/30 to-blue-400/20 hover:from-blue-500/40 hover:to-blue-400/30 text-slate-800 border-blue-400/30'
-                }`}>
-                  Refresh Weather Data
-                </button>
-                <button className={`w-full p-3 rounded-2xl border transition-all duration-300 text-sm font-medium ${
-                  theme === 'dark'
-                    ? 'bg-gradient-to-r from-green-600/30 to-green-500/20 hover:from-green-600/40 hover:to-green-500/30 text-white border-green-500/30'
-                    : 'bg-gradient-to-r from-green-500/30 to-green-400/20 hover:from-green-500/40 hover:to-green-400/30 text-slate-800 border-green-400/30'
-                }`}>
-                  Test Connection
-                </button>
-                <button className={`w-full p-3 rounded-2xl border transition-all duration-300 text-sm font-medium ${
-                  theme === 'dark'
-                    ? 'bg-gradient-to-r from-amber-600/30 to-amber-500/20 hover:from-amber-600/40 hover:to-amber-500/30 text-white border-amber-500/30'
-                    : 'bg-gradient-to-r from-amber-500/30 to-amber-400/20 hover:from-amber-500/40 hover:to-amber-400/30 text-slate-800 border-amber-400/30'
-                }`}>
-                  View Logs
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -570,4 +520,14 @@ const Index = () => {
   );
 };
 
-export default Index;
+export { Index };
+
+const App = () => {
+  return (
+    <ThemeProvider>
+      <Index />
+    </ThemeProvider>
+  );
+};
+
+export default App;

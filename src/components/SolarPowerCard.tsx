@@ -1,6 +1,7 @@
 import { Sun, Battery } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useTheme } from "@/context/ThemeProvider";
 
 interface SolarPowerCardProps {
   batteryLevel?: number;
@@ -10,9 +11,8 @@ interface SolarPowerCardProps {
 }
 
 export const SolarPowerCard = ({ batteryLevel = 0, isCharging = false, currentOutput = 0, isConnected = false }: SolarPowerCardProps) => {
-  // Get current theme
-  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-  const isDark = theme === 'dark';
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   const radius = 50;
   const circumference = 2 * Math.PI * radius;

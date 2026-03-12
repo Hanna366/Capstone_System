@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Shield, Wind, Droplets, Sun } from "lucide-react";
+import { useTheme } from "@/context/ThemeProvider";
 
 interface CoverStatusCardProps {
   windSpeed: number;
@@ -8,9 +9,8 @@ interface CoverStatusCardProps {
 }
 
 export const CoverStatusCard = ({ windSpeed, humidity, temperature }: CoverStatusCardProps) => {
-  // Get current theme
-  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-  const isDark = theme === 'dark';
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   // Determine which cover is currently active
   let coverType = 'none';

@@ -1,5 +1,6 @@
 import { CheckCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useTheme } from "@/context/ThemeProvider";
 
 interface StatusBannerProps {
   title: string;
@@ -10,9 +11,8 @@ interface StatusBannerProps {
 }
 
 export const StatusBanner = ({ title, message, variant = "warning", isCharging = false, isBlynkConnected = false }: StatusBannerProps) => {
-  // Get current theme
-  const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-  const isDark = theme === 'dark';
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
     <Card className={`p-6 backdrop-blur-sm rounded-3xl shadow-2xl border hover:scale-[1.02] transition-all duration-300 ${

@@ -84,12 +84,13 @@ app.post('/api/device/data', (req, res) => {
 });
 
 // Control rack (from web app)
-app.post('/api/device/control/rack', (req, res) => {
+app.post('/api/device/control/rack', (req: any, res: any): void => {
   try {
     const { position } = req.body; // 'extend' or 'retract'
     
     if (!['extend', 'retract'].includes(position)) {
-      return res.status(400).json({ success: false, error: 'Invalid position' });
+      res.status(400).json({ success: false, error: 'Invalid position' });
+      return;
     }
 
     // Update rack position

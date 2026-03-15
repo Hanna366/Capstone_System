@@ -7,10 +7,10 @@ interface StatusBannerProps {
   message: string;
   variant?: "warning" | "success" | "info";
   isCharging?: boolean;
-  isBlynkConnected?: boolean;
+  esp32Connected?: boolean;
 }
 
-export const StatusBanner = ({ title, message, variant = "warning", isCharging = false, isBlynkConnected = false }: StatusBannerProps) => {
+export const StatusBanner = ({ title, message, variant = "warning", isCharging = false, esp32Connected = false }: StatusBannerProps) => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
@@ -29,10 +29,10 @@ export const StatusBanner = ({ title, message, variant = "warning", isCharging =
       <div className="space-y-3">
         <div className={`flex items-center gap-3 p-3 rounded-xl border transition-colors duration-300 ${
           isDark 
-            ? (isBlynkConnected ? 'bg-green-900/30 border-green-800/50' : 'bg-red-900/30 border-red-800/50')
-            : (isBlynkConnected ? 'bg-green-100/50 border-green-300/50' : 'bg-red-100/50 border-red-300/50')
+            ? (esp32Connected ? 'bg-green-900/30 border-green-800/50' : 'bg-red-900/30 border-red-800/50')
+            : (esp32Connected ? 'bg-green-100/50 border-green-300/50' : 'bg-red-100/50 border-red-300/50')
         }`}>
-          {isBlynkConnected ? (
+          {esp32Connected ? (
             <CheckCircle className={`h-5 w-5 flex-shrink-0 ${isDark ? 'text-green-400' : 'text-green-600'}`} />
           ) : (
             <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 flex-shrink-0 ${isDark ? 'text-red-400' : 'text-red-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -42,10 +42,10 @@ export const StatusBanner = ({ title, message, variant = "warning", isCharging =
           <div>
             <span className={`text-sm font-medium ${
               isDark 
-                ? (isBlynkConnected ? 'text-gray-200' : 'text-red-400')
-                : (isBlynkConnected ? 'text-green-700' : 'text-red-700')
+                ? (esp32Connected ? 'text-gray-200' : 'text-red-400')
+                : (esp32Connected ? 'text-green-700' : 'text-red-700')
             }`}>
-              {isBlynkConnected ? 'Connected to Blynk (ESP32)' : 'Not Connected to Blynk'}
+              {esp32Connected ? 'ESP32 Connected' : 'ESP32 Offline'}
             </span>
           </div>
         </div>

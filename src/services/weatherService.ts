@@ -1,5 +1,4 @@
 import { notificationService } from './notificationService';
-import { blynkService } from './blynkService';
 
 interface WeatherData {
   temperature: number;
@@ -232,19 +231,12 @@ class WeatherService {
 
   public async fetchSensorData(): Promise<WeatherData | null> {
     try {
-      const isRaining = await blynkService.getRainSensorStatus();
-      const rainIntensity = isRaining ? Math.random() * 10 : 0; // Simulate rain intensity in mm/h
-      return {
-        temperature: null, // No temperature data from rain sensor
-        humidity: null, // No humidity data from rain sensor
-        windSpeed: null, // No wind speed data from rain sensor
-        uvIndex: null, // No UV index data from rain sensor
-        description: isRaining ? "Rain detected" : "No rain detected",
-        rainProbability: isRaining ? 100 : 0,
-        rainIntensity: rainIntensity,
-      };
+      // Since we removed Blynk, return null for sensor data
+      // This will make the system fall back to weather API data
+      console.log("Sensor data not available - using weather API fallback");
+      return null;
     } catch (error) {
-      console.error("Error fetching rain sensor data:", error);
+      console.error("Error fetching sensor data:", error);
       return null; // Return null if the sensor is not connected or an error occurs
     }
   }
@@ -340,16 +332,7 @@ export const fetchLiveWeatherData = async (): Promise<WeatherData | null> => {
 };
 
 export const fetchSensorData = async (): Promise<WeatherData | null> => {
-  // Simulate fetching data from a rain sensor
-  const isRaining = await blynkService.getRainSensorStatus();
-  const rainIntensity = isRaining ? Math.random() * 10 : 0; // Simulate rain intensity in mm/h
-  return {
-    temperature: null, // Replace with actual temperature data if available
-    humidity: null, // Replace with actual humidity data if available
-    windSpeed: null, // Replace with actual wind speed data if available
-    uvIndex: null, // Replace with actual UV index data if available
-    description: isRaining ? "Rain detected" : "No rain detected",
-    rainProbability: isRaining ? 100 : 0,
-    rainIntensity: rainIntensity,
-  };
+  // Since we removed Blynk, return null to use weather API fallback
+  console.log("Sensor data not available - using weather API fallback");
+  return null;
 };

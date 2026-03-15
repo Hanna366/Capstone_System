@@ -55,6 +55,31 @@ class WeatherService {
     }
   }
 
+  public async getWeatherData(city: string = 'Malaybalay City, PH'): Promise<WeatherData | null> {
+    try {
+      // First, attempt to fetch sensor data
+      const sensorData = await this.fetchSensorData();
+      if (sensorData) {
+        console.log('✅ Using sensor data:', sensorData);
+        return sensorData;
+      }
+
+      // If sensor data is unavailable, fallback to weather forecast
+      console.warn('⚠️ Sensor data unavailable. Falling back to weather forecast.');
+      const forecastData = await this.getCurrentWeather(city);
+      if (forecastData) {
+        console.log('✅ Using weather forecast data:', forecastData);
+        return forecastData;
+      }
+
+      console.error('❌ Both sensor data and weather forecast data are unavailable.');
+      return null;
+    } catch (error) {
+      console.error('❌ Error fetching weather data:', error);
+      return null;
+    }
+  }
+
   public async getCurrentWeather(city: string = 'Malaybalay City, PH'): Promise<WeatherData | null> {
     console.log('🌤 Fetching weather data for:', city);
     console.log('🔑 API Key available:', !!this.apiKey);

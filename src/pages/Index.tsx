@@ -6,12 +6,10 @@ import { SolarPowerCard } from "@/components/SolarPowerCard";
 import { WeatherCard } from "@/components/WeatherCard";
 import { WeatherAnalysisCard } from "@/components/WeatherAnalysisCard";
 import { RackControlCard } from "@/components/RackControlCard";
-import { BlynkConnectionStatus } from "@/components/BlynkConnectionStatus";
-import { BlynkSettingsDialog } from "@/components/BlynkSettingsDialog";
 import { NotificationHistory } from "@/components/NotificationHistory";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { CoverStatusCard } from "@/components/CoverStatusCard";
-import { blynkService, type DeviceData } from "@/services/blynkService";
+import { smartDryingService, type DeviceData } from "@/services/smartDryingService";
 import { authService } from "@/services/authService";
 import { weatherService, type WeatherData } from "@/services/weatherService";
 import { toast } from "sonner";
@@ -104,11 +102,13 @@ const Index = () => {
   useEffect(() => {
     const checkRainSensorConnection = async () => {
       try {
-        const isConnected = await blynkService.isRainSensorConnected();
+        // For now, assume rain sensor is connected when ESP32 is online
+        const isConnected = deviceData?.esp32Connected || false;
         setIsRainSensorConnected(isConnected);
 
         if (isConnected) {
-          const rainStatus = await blynkService.getRainSensorStatus();
+          // Simulate rain detection based on humidity (you can replace with actual sensor logic)
+          const rainStatus = (deviceData?.humidity || 0) > 70;
           setRainDetected(rainStatus);
         } else {
           setRainDetected(false); // Default to no rain if sensor is disconnected
@@ -125,7 +125,7 @@ const Index = () => {
     const interval = setInterval(checkRainSensorConnection, 10000); // Check every 10 seconds
 
     return () => clearInterval(interval); // Cleanup on unmount
-  }, []);
+  }, [deviceData]);
 
   // Updated system decision logic based on rain sensor
   useEffect(() => {
@@ -133,7 +133,7 @@ const Index = () => {
       if (isRainSensorConnected) {
         if (rainDetected) {
           console.log("Rain detected: Retracting rack cover.");
-          blynkService.controlRack("retract"); // Retract the rack cover immediately
+          smartDryingService.controlRack("retract"); // Retract the rack cover immediately
         } else {
           console.log("No rain detected: Allowing normal drying operations.");
           // Allow normal drying operations (rack remains extended)
@@ -153,7 +153,7 @@ const Index = () => {
   // Manual user control logic (if enabled)
   const handleManualControl = (action: "extend" | "retract") => {
     console.log(`Manual control: ${action} rack.`);
-    blynkService.controlRack(action);
+    smartDryingService.controlRack(action);
   };
 
   // Fail-safe behavior for Weather API
@@ -163,16 +163,7 @@ const Index = () => {
     }
   }, [weatherData]);
 
-  const [rackAutoMode, setRackAutoMode] = useState(false); // Independent state for rack auto mode
-
-  const handleToggleRackAutoMode = async (enabled: boolean) => {
-    const success = await blynkService.toggleRackAutoMode(enabled);
-    if (success) {
-      setRackAutoMode(enabled); // Update independent rack auto mode state
-    } else {
-      toast.error("Failed to toggle rack auto mode.");
-    }
-  };
+  // Note: rackAutoMode is now handled by deviceData.autoMode from smartDryingService
 
   const [dataSource, setDataSource] = useState<'sensor' | 'api'>('sensor');
 
@@ -218,6 +209,25 @@ const Index = () => {
     };
 
     fetchWeatherData();
+  }, []);
+
+  // Initialize SmartDryingService for ESP32 integration
+  useEffect(() => {
+    const initService = async () => {
+      const success = await smartDryingService.initialize();
+      if (success) {
+        const unsubscribe = smartDryingService.subscribe(setDeviceData);
+        return () => {
+          unsubscribe();
+        };
+      }
+    };
+
+    initService();
+
+    return () => {
+      smartDryingService.disconnect();
+    };
   }, []);
 
   return (
@@ -407,8 +417,7 @@ const Index = () => {
             {/* Logout Button */}
             <button 
               onClick={() => {
-                authService.logout();
-                navigate('/login');
+                smartDryingService.disconnect();
               }}
               className={`p-3 rounded-2xl backdrop-blur-md border shadow-xl transition-all duration-500 ease-out flex items-center justify-center w-12 h-12 group ${
                 theme === 'dark'
@@ -451,6 +460,20 @@ const Index = () => {
               />
             </div>
 
+            {/* First Row - Status and Weather */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <StatusBanner 
+                title="System Status" 
+                message="Operating Normally" 
+              />
+              <WeatherCard 
+                temperature={weatherData?.temperature || deviceData?.temperature || 25}
+                humidity={weatherData?.humidity || deviceData?.humidity || 60}
+                uvIndex={weatherData?.uvIndex || deviceData?.uvIndex || 5}
+                windSpeed={weatherData?.windSpeed || deviceData?.windSpeed || 10}
+              />
+            </div>
+
             {/* Bottom Row - Two Cards Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Cover Status Card */}
@@ -473,11 +496,11 @@ const Index = () => {
                   : 'bg-white/60 border-slate-200/30'
               }`}>
                 <RackControlCard
-                  onExtend={() => blynkService.controlRack("extend")}
-                  onRetract={() => blynkService.controlRack("retract")}
+                  onExtend={() => smartDryingService.controlRack("extend")}
+                  onRetract={() => smartDryingService.controlRack("retract")}
                   position={deviceData?.rackPosition || "retracted"}
-                  autoMode={rackAutoMode} // Use independent rack auto mode
-                  onToggleAutoMode={handleToggleRackAutoMode}
+                  autoMode={deviceData?.autoMode || false}
+                  onToggleAutoMode={(enabled) => smartDryingService.toggleAutoMode(enabled)}
                 />
               </div>
             </div>
@@ -496,7 +519,6 @@ const Index = () => {
                 message="Not Connected"
                 variant="warning"
                 isCharging={false}
-                isBlynkConnected={false}
               />
             </div>
 
